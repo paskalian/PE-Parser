@@ -81,4 +81,8 @@
   <ItemGroup>
     <Font Include="ProggyClean.ttf" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Images\Menu.svg" />
+    <None Include="..\Images\PEParser.svg" />
+  </ItemGroup>
 </Project>

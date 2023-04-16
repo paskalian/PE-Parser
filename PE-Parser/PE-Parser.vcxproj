@@ -161,6 +161,10 @@
   <ItemGroup>
     <Font Include="ProggyClean.ttf" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Images\Menu.svg" />
+    <None Include="..\Images\PEParser.svg" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
