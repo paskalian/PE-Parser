@@ -1,5 +1,5 @@
 ![WID LOGO](Images/PEParser.svg "PEPARSER_LOGO")
-<p align="center"><b>Simple designed Portable Executable (PE) files parser powered by Dear ImGui</b></p>
+<p align="center"><b>Simple designed Portable Executable (PE) files parser powered by <a href="https://github.com/ocornut/imgui" target="_blank">Dear ImGui</a></b></p>
 
 <br>
 <p align="center">
