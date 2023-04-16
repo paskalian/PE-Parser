@@ -29,7 +29,21 @@ namespace Parser
 	namespace Helpers
 	{
 		VOID Parse(DWORD BaseOffset, WORD Id);
+		VOID ParseExportDir(DWORD BaseOffset);
+		VOID ParseImportDir(DWORD BaseOffset);
 		VOID ParseRsrcDir(DWORD BaseOffset);
+		VOID ParseExceptionDir(DWORD BaseOffset);
+		VOID ParseSecurityDir(DWORD BaseOffset);
+		VOID ParseBaseRelocDir(DWORD BaseOffset);
+		VOID ParseDebugDir(DWORD BaseOffset);
+		// Architecture
+		// GlobalPtr
+		VOID ParseTlsDir(DWORD BaseOffset);
+		VOID ParseLoadCfgDir(DWORD BaseOffset);
+		VOID ParseBoundImportDir(DWORD BaseOffset);
+		VOID ParseIATDir(DWORD BaseOffset);
+		VOID ParseDelayLoadImportDir(DWORD BaseOffset);
+		VOID ParseCOMDir(DWORD BaseOffset);
 
 		DWORD RVAToFileOffset(DWORD RVA);
 	}

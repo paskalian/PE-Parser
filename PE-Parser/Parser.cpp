@@ -696,51 +696,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_EXPORT_DIRECTORY pImageExportDir = reinterpret_cast<PIMAGE_EXPORT_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
-
-				ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageExportDir->Characteristics);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, Characteristics));
-
-				ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageExportDir->TimeDateStamp);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, TimeDateStamp));
-
-				ImGui::BulletText("[%s] MajorVersion: 0x%X", "WORD", pImageExportDir->MajorVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, MajorVersion));
-
-				ImGui::BulletText("[%s] MinorVersion: 0x%X", "WORD", pImageExportDir->MinorVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, MinorVersion));
-
-				ImGui::BulletText("[%s] Name: 0x%X", "DWORD", pImageExportDir->Name);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, Name));
-
-				ImGui::BulletText("[%s] Base: 0x%X", "DWORD", pImageExportDir->Base);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, Base));
-
-				ImGui::BulletText("[%s] NumberOfFunctions: 0x%X", "DWORD", pImageExportDir->NumberOfFunctions);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, NumberOfFunctions));
-
-				ImGui::BulletText("[%s] NumberOfNames: 0x%X", "DWORD", pImageExportDir->NumberOfNames);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, NumberOfNames));
-
-				ImGui::BulletText("[%s] AddressOfFunctions: 0x%X", "DWORD", pImageExportDir->AddressOfFunctions);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, AddressOfFunctions));
-
-				ImGui::BulletText("[%s] AddressOfNames: 0x%X", "DWORD", pImageExportDir->AddressOfNames);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, AddressOfNames));
-
-				ImGui::BulletText("[%s] AddressOfNameOrdinals: 0x%X", "DWORD", pImageExportDir->AddressOfNameOrdinals);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, AddressOfNameOrdinals));
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_EXPORT);
 			}
 			else
 				ImGui::Text("This executable doesn't have exports.");
@@ -760,51 +716,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_IMPORT_DESCRIPTOR pImageImportDescr = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>((UINT_PTR)g_pDosHeader + BaseOffset);
-
-				static std::vector<char*> Collapsing_ImageImportDescrIds;
-				for (int i = 0; ; i++)
-				{
-					if (Collapsing_ImageImportDescrIds.size() <= i)
-						Collapsing_ImageImportDescrIds.push_back(nullptr);
-
-					PIMAGE_IMPORT_DESCRIPTOR pImageImportDescrIdx = &pImageImportDescr[i];
-
-					BaseOffset = (BYTE*)pImageImportDescrIdx - (BYTE*)g_pDosHeader;
-
-					if (!pImageImportDescrIdx->Characteristics)
-						break;
-
-					const char* pImportName = reinterpret_cast<const char*>((BYTE*)g_pDosHeader + pImageImportDescrIdx->Name);
-					bool Collapsing_ImageImportDescrIdx = ImGui::TreeNode(&Collapsing_ImageImportDescrIds[i], "[%i] %s: 0x%X", i, pImportName, BaseOffset);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, Characteristics));
-
-					if (Collapsing_ImageImportDescrIdx)
-					{
-						ImGui::BulletText("[%s] OriginalFirstThunk: 0x%X", "DWORD", pImageImportDescrIdx->OriginalFirstThunk);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, OriginalFirstThunk));
-
-						ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageImportDescrIdx->TimeDateStamp);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, TimeDateStamp));
-
-						ImGui::BulletText("[%s] ForwarderChain: 0x%X", "DWORD", pImageImportDescrIdx->ForwarderChain);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, ForwarderChain));
-
-						ImGui::BulletText("[%s] Name: 0x%X", "DWORD", pImageImportDescrIdx->Name);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, Name));
-
-						ImGui::BulletText("[%s] FirstThunk: 0x%X", "DWORD", pImageImportDescrIdx->FirstThunk);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, FirstThunk));
-
-						ImGui::TreePop();
-					}
-				}
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_IMPORT);
 			}
 			else
 				ImGui::Text("This executable doesn't have imports.");
@@ -844,39 +756,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_RUNTIME_FUNCTION_ENTRY pRuntimeFunctions = reinterpret_cast<PIMAGE_RUNTIME_FUNCTION_ENTRY>((UINT_PTR)g_pDosHeader + BaseOffset);
-				const DWORD NumberOfRuntimeFunctions = pExceptionDir->Size / sizeof(IMAGE_RUNTIME_FUNCTION_ENTRY);
-
-				static std::vector<char*> Collapsing_ImageImportDescrIds(NumberOfRuntimeFunctions);
-				Collapsing_ImageImportDescrIds.resize(NumberOfRuntimeFunctions);
-
-				for (int i = 0; i < NumberOfRuntimeFunctions; i++)
-				{
-					PIMAGE_RUNTIME_FUNCTION_ENTRY pRuntimeFunctionIdx = &pRuntimeFunctions[i];
-
-					BaseOffset = (BYTE*)pRuntimeFunctionIdx - (BYTE*)g_pDosHeader;
-
-					bool Collapsing_RuntimeFunctionIdx = ImGui::TreeNode(&Collapsing_ImageImportDescrIds[i], "IMAGE_RUNTIME_FUNCTION_ENTRY[%i]: 0x%X", i, BaseOffset);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RUNTIME_FUNCTION_ENTRY, BeginAddress));
-
-					if (Collapsing_RuntimeFunctionIdx)
-					{
-						ImGui::BulletText("[%s] BeginAddress: 0x%X", "DWORD", pRuntimeFunctionIdx->BeginAddress);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RUNTIME_FUNCTION_ENTRY, BeginAddress));
-
-						ImGui::BulletText("[%s] EndAddress: 0x%X", "DWORD", pRuntimeFunctionIdx->EndAddress);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RUNTIME_FUNCTION_ENTRY, EndAddress));
-
-						ImGui::BulletText("[%s] UnwindData: 0x%X", "DWORD", pRuntimeFunctionIdx->UnwindData);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RUNTIME_FUNCTION_ENTRY, UnwindData));
-
-						ImGui::TreePop();
-					}
-				}
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_EXCEPTION);
 			}
 			else
 				ImGui::Text("This executable doesn't have runtime functions.");
@@ -896,23 +776,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const LPWIN_CERTIFICATE pWinCertificate = reinterpret_cast<LPWIN_CERTIFICATE>((UINT_PTR)g_pDosHeader + BaseOffset);
-
-				ImGui::BulletText("[%s] dwLength: 0x%X", "DWORD", pWinCertificate->dwLength);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(WIN_CERTIFICATE, dwLength));
-
-				ImGui::BulletText("[%s] wRevision: 0x%X", "WORD", pWinCertificate->wRevision);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(WIN_CERTIFICATE, wRevision));
-
-				ImGui::BulletText("[%s] wCertificateType: 0x%X", "WORD", pWinCertificate->wCertificateType);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(WIN_CERTIFICATE, wCertificateType));
-
-				ImGui::BulletText("[%s] bCertificate[1]: 0x%X", "BYTE", pWinCertificate->bCertificate);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(WIN_CERTIFICATE, bCertificate));
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_SECURITY);
 			}
 			else
 				ImGui::Text("This executable doesn't have wincertificate.");
@@ -932,60 +796,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_BASE_RELOCATION pImageBaseReloc = reinterpret_cast<PIMAGE_BASE_RELOCATION>((UINT_PTR)g_pDosHeader + BaseOffset);
-				const DWORD NumberOfRelocs = pRelocDir->Size / sizeof(IMAGE_BASE_RELOCATION);
-
-				static std::vector<char*> Collapsing_ImageBaseRelocIds(NumberOfRelocs);
-				Collapsing_ImageBaseRelocIds.resize(NumberOfRelocs);
-
-				PIMAGE_BASE_RELOCATION pImageBaseRelocIdx = pImageBaseReloc;
-				for (int i = 0; i < NumberOfRelocs; i++)
-				{
-					const DWORD NumberOfRelocEntries = (pImageBaseReloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
-
-					BaseOffset = (BYTE*)pImageBaseRelocIdx - (BYTE*)g_pDosHeader;
-
-					bool Collapsing_ImageBaseRelocIdx = ImGui::TreeNode(&Collapsing_ImageBaseRelocIds[i], "[%i] IMAGE_BASE_RELOCATION: 0x%X", i, BaseOffset);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BASE_RELOCATION, VirtualAddress));
-
-					if (Collapsing_ImageBaseRelocIdx)
-					{
-						ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageBaseRelocIdx->VirtualAddress);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BASE_RELOCATION, VirtualAddress));
-
-						ImGui::BulletText("[%s] SizeOfBlock: 0x%X", "DWORD", pImageBaseRelocIdx->SizeOfBlock);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BASE_RELOCATION, SizeOfBlock));
-
-						ImGui::Spacing();
-
-						std::vector<char*> Collapsing_ImageBaseRelocEntryIds(NumberOfRelocEntries);
-						for (int i2 = 0; i2 < NumberOfRelocEntries; i2++)
-						{
-							const PWORD RelocEntry = &reinterpret_cast<PWORD>(pImageBaseRelocIdx + 1)[i2];
-
-							BaseOffset = (BYTE*)RelocEntry - (BYTE*)g_pDosHeader;
-
-							ImGui::Text("[%i] Type: 0x%X |", i2, (*RelocEntry >> 12));
-							if (PRSR_TOOLTIP)
-								ImGui::SetTooltip("Offset: 0x%X", BaseOffset);
-
-							ImGui::SameLine();
-
-							ImGui::Text("Offset: 0x%X", (*RelocEntry & 0xFFF));
-							if (PRSR_TOOLTIP)
-								ImGui::SetTooltip("Offset: 0x%X", BaseOffset);
-
-							ImGui::Spacing();
-						}
-
-						ImGui::TreePop();
-					}
-
-					pImageBaseRelocIdx = reinterpret_cast<PIMAGE_BASE_RELOCATION>((BYTE*)pImageBaseRelocIdx + pImageBaseRelocIdx->SizeOfBlock);
-				}
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_BASERELOC);
 			}
 			else
 				ImGui::Text("This executable doesn't have relocations.");
@@ -1005,96 +816,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_DEBUG_DIRECTORY pImageDebugDir = reinterpret_cast<PIMAGE_DEBUG_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
-
-				ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageDebugDir->Characteristics);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, Characteristics));
-
-				ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageDebugDir->TimeDateStamp);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, TimeDateStamp));
-
-				ImGui::BulletText("[%s] MajorVersion: 0x%X", "WORD", pImageDebugDir->MajorVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, MajorVersion));
-
-				ImGui::BulletText("[%s] MinorVersion: 0x%X", "WORD", pImageDebugDir->MinorVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, MinorVersion));
-
-				ImGui::BulletText("[%s] Type: 0x%X", "DWORD", pImageDebugDir->Type);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, Type));
-
-				ImGui::BulletText("[%s] SizeOfData: 0x%X", "DWORD", pImageDebugDir->SizeOfData);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, SizeOfData));
-
-				ImGui::BulletText("[%s] AddressOfRawData: 0x%X", "DWORD", pImageDebugDir->AddressOfRawData);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, AddressOfRawData));
-
-				ImGui::BulletText("[%s] PointerToRawData: 0x%X", "DWORD", pImageDebugDir->PointerToRawData);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, PointerToRawData));
-
-				ImGui::Spacing();
-
-				BaseOffset = pImageDebugDir->PointerToRawData;
-
-				static const PDWORD pCvInfo = reinterpret_cast<PDWORD>((UINT_PTR)g_pDosHeader + BaseOffset);
-				switch (*pCvInfo)
-				{
-				case CV_SIGNATURE_NB10:
-				{
-					const PCV_INFO_PDB20 pCvInfoPdb20 = reinterpret_cast<PCV_INFO_PDB20>(pCvInfo);
-
-					ImGui::Text("[%s] CvSignature: 0x%X", "DWORD", pCvInfoPdb20->CvSignature);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, CvSignature));
-
-					ImGui::Text("[%s] Offset: 0x%X", "DWORD", pCvInfoPdb20->Offset);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, Offset));
-
-					ImGui::Text("[%s] Signature: 0x%X", "DWORD", pCvInfoPdb20->Signature);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, Signature));
-
-					ImGui::Text("[%s] Age: 0x%X", "DWORD", pCvInfoPdb20->Age);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, Age));
-
-					ImGui::Text("[%s] PdbFileName[MAX_PATH]: %s", "CHAR", pCvInfoPdb20->PdbFileName);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, PdbFileName));
-
-					break;
-				}
-				case CV_SIGNATURE_RSDS:
-				{
-					const PCV_INFO_PDB70 pCvInfoPdb70 = reinterpret_cast<PCV_INFO_PDB70>(pCvInfo);
-
-					ImGui::Text("[%s] CvSignature: 0x%X", "DWORD", pCvInfoPdb70->CvSignature);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB70, CvSignature));
-
-					ImGui::Text("[%s] Signature: 0x%X", "DWORD", pCvInfoPdb70->Signature);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB70, Signature));
-
-					ImGui::Text("[%s] Age: 0x%X", "DWORD", pCvInfoPdb70->Age);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB70, Age));
-
-					ImGui::Text("[%s] PdbFileName[MAX_PATH]: %s", "CHAR", pCvInfoPdb70->PdbFileName);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB70, PdbFileName));
-
-					break;
-				}
-				}
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_DEBUG);
 			}
 			else
 				ImGui::Text("This executable doesn't have debug information.");
@@ -1154,70 +876,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_TLS_DIRECTORY pImageTlsDir = reinterpret_cast<PIMAGE_TLS_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
-				
-				// The absolute virtual addresses aren't converted, it's as they are in here.
-#ifdef _WIN64
-				ImGui::BulletText("[%s] StartAddressOfRawData: 0x%X", "ULONGLONG", pImageTlsDir->StartAddressOfRawData);
-#else
-				ImGui::BulletText("[%s] StartAddressOfRawData: 0x%X", "ULONG", pImageTlsDir->StartAddressOfRawData);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, StartAddressOfRawData));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] EndAddressOfRawData: 0x%X", "ULONGLONG", pImageTlsDir->EndAddressOfRawData);
-#else
-				ImGui::BulletText("[%s] EndAddressOfRawData: 0x%X", "ULONG", pImageTlsDir->EndAddressOfRawData);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, EndAddressOfRawData));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] AddressOfIndex: 0x%X", "ULONGLONG", pImageTlsDir->AddressOfIndex);
-#else
-				ImGui::BulletText("[%s] AddressOfIndex: 0x%X", "ULONG", pImageTlsDir->AddressOfIndex);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, AddressOfIndex));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] AddressOfCallBacks: 0x%X", "ULONGLONG", pImageTlsDir->AddressOfCallBacks);
-#else
-				ImGui::BulletText("[%s] AddressOfCallBacks: 0x%X", "ULONG", pImageTlsDir->AddressOfCallBacks);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, AddressOfCallBacks));
-
-				ImGui::BulletText("[%s] SizeOfZeroFill: 0x%X", "DWORD", pImageTlsDir->SizeOfZeroFill);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, SizeOfZeroFill));
-
-				ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageTlsDir->Characteristics);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, Characteristics));
-
-				ImGui::Spacing();
-
-				// pImageTlsDir->AddressOfCallBacks is an absolute virtual address (based on g_pOptionalHeader->ImageBase), so we are subtracting g_pOptionalHeader->ImageBase from it to get
-				// the virtual address, then convert that to file offset so we can use it.
-				const DWORD TlsCallbacksOffset = Helpers::RVAToFileOffset(pImageTlsDir->AddressOfCallBacks - g_pOptionalHeader->ImageBase);
-
-				for (int i = 0; ; i++)
-				{
-					PIMAGE_TLS_CALLBACK pTlsCallbackIdx = reinterpret_cast<PIMAGE_TLS_CALLBACK*>((BYTE*)g_pDosHeader + TlsCallbacksOffset)[i];
-					if (!pTlsCallbackIdx)
-						break;
-
-					// Same
-					BaseOffset = Helpers::RVAToFileOffset((UINT_PTR)pTlsCallbackIdx - g_pOptionalHeader->ImageBase);
-
-					ImGui::Text("PIMAGE_TLS_CALLBACK[%i]: 0x%X", i, pTlsCallbackIdx);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset);
-
-					ImGui::Spacing();
-				}
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_TLS);
 			}
 			else
 				ImGui::Text("This executable doesn't have thread local storage.");
@@ -1225,6 +884,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
+		// Parsing the load config directory.
 		const PIMAGE_DATA_DIRECTORY pLoadConfigDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG];
 		BaseOffset = Helpers::RVAToFileOffset(pLoadConfigDir->VirtualAddress);
 
@@ -1236,360 +896,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_LOAD_CONFIG_DIRECTORY pImageLoadConfigDir = reinterpret_cast<PIMAGE_LOAD_CONFIG_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
-
-				ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageLoadConfigDir->Size);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, Size));
-
-				ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageLoadConfigDir->TimeDateStamp);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, TimeDateStamp));
-
-				ImGui::BulletText("[%s] MajorVersion: 0x%X", "WORD", pImageLoadConfigDir->MajorVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, MajorVersion));
-
-				ImGui::BulletText("[%s] MinorVersion: 0x%X", "WORD", pImageLoadConfigDir->MinorVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, MinorVersion));
-
-				ImGui::BulletText("[%s] GlobalFlagsClear: 0x%X", "DWORD", pImageLoadConfigDir->GlobalFlagsClear);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GlobalFlagsClear));
-
-				ImGui::BulletText("[%s] GlobalFlagsSet: 0x%X", "DWORD", pImageLoadConfigDir->GlobalFlagsSet);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GlobalFlagsSet));
-
-				ImGui::BulletText("[%s] CriticalSectionDefaultTimeout: 0x%X", "DWORD", pImageLoadConfigDir->CriticalSectionDefaultTimeout);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CriticalSectionDefaultTimeout));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] DeCommitFreeBlockThreshold: 0x%X", "ULONGLONG", pImageLoadConfigDir->DeCommitFreeBlockThreshold);
-#else
-				ImGui::BulletText("[%s] DeCommitFreeBlockThreshold: 0x%X", "ULONG", pImageLoadConfigDir->DeCommitFreeBlockThreshold);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DeCommitFreeBlockThreshold));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] DeCommitTotalFreeThreshold: 0x%X", "ULONGLONG", pImageLoadConfigDir->DeCommitTotalFreeThreshold);
-#else
-				ImGui::BulletText("[%s] DeCommitTotalFreeThreshold: 0x%X", "ULONG", pImageLoadConfigDir->DeCommitTotalFreeThreshold);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DeCommitTotalFreeThreshold));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] LockPrefixTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->LockPrefixTable);
-#else
-				ImGui::BulletText("[%s] LockPrefixTable: 0x%X", "ULONG", pImageLoadConfigDir->LockPrefixTable);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, LockPrefixTable));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] LockPrefixTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->LockPrefixTable);
-#else
-				ImGui::BulletText("[%s] LockPrefixTable: 0x%X", "ULONG", pImageLoadConfigDir->LockPrefixTable);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, LockPrefixTable));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] MaximumAllocationSize: 0x%X", "ULONGLONG", pImageLoadConfigDir->MaximumAllocationSize);
-#else
-				ImGui::BulletText("[%s] MaximumAllocationSize: 0x%X", "ULONG", pImageLoadConfigDir->MaximumAllocationSize);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, MaximumAllocationSize));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] VirtualMemoryThreshold: 0x%X", "ULONGLONG", pImageLoadConfigDir->VirtualMemoryThreshold);
-#else
-				ImGui::BulletText("[%s] VirtualMemoryThreshold: 0x%X", "ULONG", pImageLoadConfigDir->VirtualMemoryThreshold);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, VirtualMemoryThreshold));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] ProcessAffinityMask: 0x%X", "ULONGLONG", pImageLoadConfigDir->ProcessAffinityMask);
-#else
-				ImGui::BulletText("[%s] ProcessAffinityMask: 0x%X", "ULONG", pImageLoadConfigDir->ProcessAffinityMask);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, ProcessAffinityMask));
-
-				ImGui::BulletText("[%s] ProcessHeapFlags: 0x%X", "DWORD", pImageLoadConfigDir->ProcessHeapFlags);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, ProcessHeapFlags));
-
-				ImGui::BulletText("[%s] CSDVersion: 0x%X", "WORD", pImageLoadConfigDir->CSDVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CSDVersion));
-
-				ImGui::BulletText("[%s] DependentLoadFlags: 0x%X", "WORD", pImageLoadConfigDir->DependentLoadFlags);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DependentLoadFlags));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] EditList: 0x%X", "ULONGLONG", pImageLoadConfigDir->EditList);
-#else
-				ImGui::BulletText("[%s] EditList: 0x%X", "ULONG", pImageLoadConfigDir->EditList);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, EditList));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] SecurityCookie: 0x%X", "ULONGLONG", pImageLoadConfigDir->SecurityCookie);
-#else
-				ImGui::BulletText("[%s] SecurityCookie: 0x%X", "ULONG", pImageLoadConfigDir->SecurityCookie);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, SecurityCookie));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] SEHandlerTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->SEHandlerTable);
-#else
-				ImGui::BulletText("[%s] SEHandlerTable: 0x%X", "ULONG", pImageLoadConfigDir->SEHandlerTable);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, SEHandlerTable));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] SEHandlerCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->SEHandlerCount);
-#else
-				ImGui::BulletText("[%s] SEHandlerCount: 0x%X", "ULONG", pImageLoadConfigDir->SEHandlerCount);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, SEHandlerCount));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardCFCheckFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardCFCheckFunctionPointer);
-#else
-				ImGui::BulletText("[%s] GuardCFCheckFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardCFCheckFunctionPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardCFCheckFunctionPointer));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardCFDispatchFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardCFDispatchFunctionPointer);
-#else
-				ImGui::BulletText("[%s] GuardCFDispatchFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardCFDispatchFunctionPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardCFDispatchFunctionPointer));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardCFFunctionTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardCFFunctionTable);
-#else
-				ImGui::BulletText("[%s] GuardCFFunctionTable: 0x%X", "ULONG", pImageLoadConfigDir->GuardCFFunctionTable);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardCFFunctionTable));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardCFFunctionCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardCFFunctionCount);
-#else
-				ImGui::BulletText("[%s] GuardCFFunctionCount: 0x%X", "ULONG", pImageLoadConfigDir->GuardCFFunctionCount);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardCFFunctionCount));
-
-				ImGui::BulletText("[%s] GuardFlags: 0x%X", "DWORD", pImageLoadConfigDir->GuardFlags);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardFlags));
-
-				const bool Collapsing_ImageLoadConfigDir_CodeIntegrity = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] CodeIntegrity", "IMAGE_LOAD_CONFIG_CODE_INTEGRITY");
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity));
-
-				if (Collapsing_ImageLoadConfigDir_CodeIntegrity)
-				{
-					ImGui::BulletText("[%s] Flags: 0x%X", "WORD", pImageLoadConfigDir->CodeIntegrity.Flags);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity.Flags));
-
-					ImGui::BulletText("[%s] Catalog: 0x%X", "WORD", pImageLoadConfigDir->CodeIntegrity.Catalog);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity.Catalog));
-
-					ImGui::BulletText("[%s] CatalogOffset: 0x%X", "DWORD", pImageLoadConfigDir->CodeIntegrity.CatalogOffset);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity.CatalogOffset));
-
-					ImGui::BulletText("[%s] Reserved: 0x%X", "DWORD", pImageLoadConfigDir->CodeIntegrity.Reserved);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity.Reserved));
-
-					ImGui::TreePop();
-				}
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardAddressTakenIatEntryTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardAddressTakenIatEntryTable);
-#else
-				ImGui::BulletText("[%s] GuardAddressTakenIatEntryTable: 0x%X", "ULONG", pImageLoadConfigDir->GuardAddressTakenIatEntryTable);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardAddressTakenIatEntryTable));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardAddressTakenIatEntryCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardAddressTakenIatEntryCount);
-#else
-				ImGui::BulletText("[%s] GuardAddressTakenIatEntryCount: 0x%X", "ULONG", pImageLoadConfigDir->GuardAddressTakenIatEntryCount);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardAddressTakenIatEntryCount));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardLongJumpTargetTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardLongJumpTargetTable);
-#else
-				ImGui::BulletText("[%s] GuardLongJumpTargetTable: 0x%X", "ULONG", pImageLoadConfigDir->GuardLongJumpTargetTable);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardLongJumpTargetTable));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardLongJumpTargetCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardLongJumpTargetCount);
-#else
-				ImGui::BulletText("[%s] GuardLongJumpTargetCount: 0x%X", "ULONG", pImageLoadConfigDir->GuardLongJumpTargetCount);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardLongJumpTargetCount));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] DynamicValueRelocTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->DynamicValueRelocTable);
-#else
-				ImGui::BulletText("[%s] DynamicValueRelocTable: 0x%X", "ULONG", pImageLoadConfigDir->DynamicValueRelocTable);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DynamicValueRelocTable));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] CHPEMetadataPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->CHPEMetadataPointer);
-#else
-				ImGui::BulletText("[%s] CHPEMetadataPointer: 0x%X", "ULONG", pImageLoadConfigDir->CHPEMetadataPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CHPEMetadataPointer));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardRFFailureRoutine: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardRFFailureRoutine);
-#else
-				ImGui::BulletText("[%s] GuardRFFailureRoutine: 0x%X", "ULONG", pImageLoadConfigDir->GuardRFFailureRoutine);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardRFFailureRoutine));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardRFFailureRoutineFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardRFFailureRoutineFunctionPointer);
-#else
-				ImGui::BulletText("[%s] GuardRFFailureRoutineFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardRFFailureRoutineFunctionPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardRFFailureRoutineFunctionPointer));
-
-				ImGui::BulletText("[%s] DynamicValueRelocTableOffset: 0x%X", "DWORD", pImageLoadConfigDir->DynamicValueRelocTableOffset);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DynamicValueRelocTableOffset));
-
-				ImGui::BulletText("[%s] DynamicValueRelocTableSection: 0x%X", "WORD", pImageLoadConfigDir->DynamicValueRelocTableSection);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DynamicValueRelocTableSection));
-
-				ImGui::BulletText("[%s] Reserved2: 0x%X", "WORD", pImageLoadConfigDir->Reserved2);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, Reserved2));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardRFVerifyStackPointerFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardRFVerifyStackPointerFunctionPointer);
-#else
-				ImGui::BulletText("[%s] GuardRFVerifyStackPointerFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardRFVerifyStackPointerFunctionPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardRFVerifyStackPointerFunctionPointer));
-
-				ImGui::BulletText("[%s] HotPatchTableOffset: 0x%X", "DWORD", pImageLoadConfigDir->HotPatchTableOffset);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, HotPatchTableOffset));
-
-				ImGui::BulletText("[%s] Reserved3: 0x%X", "DWORD", pImageLoadConfigDir->Reserved3);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, Reserved3));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] EnclaveConfigurationPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->EnclaveConfigurationPointer);
-#else
-				ImGui::BulletText("[%s] EnclaveConfigurationPointer: 0x%X", "ULONG", pImageLoadConfigDir->EnclaveConfigurationPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, EnclaveConfigurationPointer));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] VolatileMetadataPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->VolatileMetadataPointer);
-#else
-				ImGui::BulletText("[%s] VolatileMetadataPointer: 0x%X", "ULONG", pImageLoadConfigDir->VolatileMetadataPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, VolatileMetadataPointer));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardEHContinuationTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardEHContinuationTable);
-#else
-				ImGui::BulletText("[%s] GuardEHContinuationTable: 0x%X", "ULONG", pImageLoadConfigDir->GuardEHContinuationTable);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardEHContinuationTable));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardEHContinuationCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardEHContinuationCount);
-#else
-				ImGui::BulletText("[%s] GuardEHContinuationCount: 0x%X", "ULONG", pImageLoadConfigDir->GuardEHContinuationCount);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardEHContinuationCount));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardXFGCheckFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardXFGCheckFunctionPointer);
-#else
-				ImGui::BulletText("[%s] GuardXFGCheckFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardXFGCheckFunctionPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardXFGCheckFunctionPointer));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardXFGDispatchFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardXFGDispatchFunctionPointer);
-#else
-				ImGui::BulletText("[%s] GuardXFGDispatchFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardXFGDispatchFunctionPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardXFGDispatchFunctionPointer));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardXFGTableDispatchFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardXFGTableDispatchFunctionPointer);
-#else
-				ImGui::BulletText("[%s] GuardXFGTableDispatchFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardXFGTableDispatchFunctionPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardXFGTableDispatchFunctionPointer));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] CastGuardOsDeterminedFailureMode: 0x%X", "ULONGLONG", pImageLoadConfigDir->CastGuardOsDeterminedFailureMode);
-#else
-				ImGui::BulletText("[%s] CastGuardOsDeterminedFailureMode: 0x%X", "ULONG", pImageLoadConfigDir->CastGuardOsDeterminedFailureMode);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CastGuardOsDeterminedFailureMode));
-
-#ifdef _WIN64
-				ImGui::BulletText("[%s] GuardMemcpyFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardMemcpyFunctionPointer);
-#else
-				ImGui::BulletText("[%s] GuardMemcpyFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardMemcpyFunctionPointer);
-#endif
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardMemcpyFunctionPointer));
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG);
 			}
 			else
 				ImGui::Text("This executable doesn't have load configs.");
@@ -1597,6 +904,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
+		// Parsing the bound imports directory.
 		const PIMAGE_DATA_DIRECTORY pBoundImportDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT];
 		BaseOffset = Helpers::RVAToFileOffset(pBoundImportDir->VirtualAddress);
 	
@@ -1608,50 +916,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_BOUND_IMPORT_DESCRIPTOR pImageBoundImportDescr = reinterpret_cast<PIMAGE_BOUND_IMPORT_DESCRIPTOR>((UINT_PTR)g_pDosHeader + BaseOffset);
-
-				static std::vector<char*> Collapsing_ImageBoundImportDescrIds;
-
-				DWORD ForwarderRefCount = 0;
-				for (int i = 0; ; i++)
-				{
-					if (Collapsing_ImageBoundImportDescrIds.size() <= i)
-						Collapsing_ImageBoundImportDescrIds.push_back(nullptr);
-
-					const PIMAGE_BOUND_IMPORT_DESCRIPTOR pImageBoundImportDescrIdx = &pImageBoundImportDescr[i];
-
-					BaseOffset = (BYTE*)pImageBoundImportDescrIdx - (BYTE*)g_pDosHeader;
-
-					if (!pImageBoundImportDescrIdx->TimeDateStamp)
-						break;
-
-					const char* pBoundImportName = reinterpret_cast<const char*>((BYTE*)pImageBoundImportDescr + pImageBoundImportDescrIdx->OffsetModuleName);
-					bool Collapsing_ImageBoundImportDescrIdx = ImGui::TreeNode(&Collapsing_ImageBoundImportDescrIds[i], "[%i] %s - %s: 0x%X", i, ForwarderRefCount ? "IMAGE_BOUND_FORWARDER_REF" : "IMAGE_BOUND_IMPORT_DESCRIPTOR", pBoundImportName, BaseOffset);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BOUND_IMPORT_DESCRIPTOR, TimeDateStamp));
-
-					if (Collapsing_ImageBoundImportDescrIdx)
-					{
-						ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageBoundImportDescrIdx->TimeDateStamp);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BOUND_IMPORT_DESCRIPTOR, TimeDateStamp));
-
-						ImGui::BulletText("[%s] OffsetModuleName: 0x%X", "WORD", pImageBoundImportDescrIdx->OffsetModuleName);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BOUND_IMPORT_DESCRIPTOR, OffsetModuleName));
-
-						ImGui::BulletText("[%s] %s: 0x%X", "WORD", ForwarderRefCount ? "Reserved" : "NumberOfModuleForwarderRefs", pImageBoundImportDescrIdx->NumberOfModuleForwarderRefs);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BOUND_IMPORT_DESCRIPTOR, NumberOfModuleForwarderRefs));
-						
-						ImGui::TreePop();
-					}
-
-					if (ForwarderRefCount)
-						ForwarderRefCount--;
-					else
-						ForwarderRefCount = pImageBoundImportDescrIdx->NumberOfModuleForwarderRefs;
-				}
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT);
 			}
 			else
 				ImGui::Text("This executable doesn't have bound imports.");
@@ -1659,6 +924,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
+		// Parsing the Import Address Table (IAT).
 		const PIMAGE_DATA_DIRECTORY pIATDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT];
 		BaseOffset = Helpers::RVAToFileOffset(pIATDir->VirtualAddress);
 
@@ -1670,39 +936,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_THUNK_DATA pImageThunkData = reinterpret_cast<PIMAGE_THUNK_DATA>((UINT_PTR)g_pDosHeader + BaseOffset);
-
-				static std::vector<char*> Collapsing_ImageThunkDataIds;
-				for (int i = 0; ; i++)
-				{
-					if (Collapsing_ImageThunkDataIds.size() <= i)
-						Collapsing_ImageThunkDataIds.push_back(nullptr);
-
-					const PIMAGE_THUNK_DATA pImageThunkDataIdx = &pImageThunkData[i];
-
-					BaseOffset = (BYTE*)pImageThunkDataIdx - (BYTE*)g_pDosHeader;
-
-					if (!pImageThunkDataIdx->u1.Function)
-						break;
-
-					bool Collapsing_ImageThunkDataIdx = ImGui::TreeNode(&Collapsing_ImageThunkDataIds[i], "[%i] IMAGE_THUNK_DATA: 0x%X", i, BaseOffset);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_THUNK_DATA, u1.Function));
-
-					if (Collapsing_ImageThunkDataIdx)
-					{
-#ifdef _WIN64
-						ImGui::BulletText("[%s] Function: 0x%X", "ULONGLONG", pImageThunkDataIdx->u1.Function);
-#else
-						ImGui::BulletText("[%s] Function: 0x%X", "ULONG", pImageThunkDataIdx->u1.Function);
-#endif
-
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_THUNK_DATA, u1.Function));
-
-						ImGui::TreePop();
-					}
-				}
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_IAT);
 			}
 			else
 				ImGui::Text("This executable doesn't have imports.");
@@ -1710,6 +944,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
+		// Parsing the delay load imports directory.
 		const PIMAGE_DATA_DIRECTORY pDelayImportDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT];
 		BaseOffset = Helpers::RVAToFileOffset(pDelayImportDir->VirtualAddress);
 
@@ -1721,63 +956,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_DELAYLOAD_DESCRIPTOR pImageDelayLoad = reinterpret_cast<PIMAGE_DELAYLOAD_DESCRIPTOR>((UINT_PTR)g_pDosHeader + BaseOffset);
-
-				static std::vector<char*> Collapsing_ImageDelayLoadIds;
-				for (int i = 0; ; i++)
-				{
-					if (Collapsing_ImageDelayLoadIds.size() <= i)
-						Collapsing_ImageDelayLoadIds.push_back(nullptr);
-
-					const PIMAGE_DELAYLOAD_DESCRIPTOR pImageDelayLoadIdx = &pImageDelayLoad[i];
-
-					BaseOffset = (BYTE*)pImageDelayLoadIdx - (BYTE*)g_pDosHeader;
-
-					if (!pImageDelayLoadIdx->Attributes.AllAttributes)
-						break;
-
-					const char* DelayDllName = (char*)g_pDosHeader + Helpers::RVAToFileOffset(pImageDelayLoadIdx->DllNameRVA);
-					bool Collapsing_ImageDelayLoadIdx = ImGui::TreeNode(&Collapsing_ImageDelayLoadIds[i], "IMAGE_DELAYLOAD_DESCRIPTOR[%i] (%s): 0x%X", i, DelayDllName, BaseOffset);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, Attributes.AllAttributes));
-
-					if (Collapsing_ImageDelayLoadIdx)
-					{
-						ImGui::BulletText("[%s] AllAttributes: 0x%X", "DWORD", pImageDelayLoadIdx->Attributes.AllAttributes);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, Attributes.AllAttributes));
-
-						ImGui::BulletText("[%s] DllNameRVA: 0x%X", "DWORD", pImageDelayLoadIdx->DllNameRVA);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, DllNameRVA));
-
-						ImGui::BulletText("[%s] ModuleHandleRVA: 0x%X", "DWORD", pImageDelayLoadIdx->ModuleHandleRVA);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, ModuleHandleRVA));
-
-						ImGui::BulletText("[%s] ImportAddressTableRVA: 0x%X", "DWORD", pImageDelayLoadIdx->ImportAddressTableRVA);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, ImportAddressTableRVA));
-
-						ImGui::BulletText("[%s] ImportNameTableRVA: 0x%X", "DWORD", pImageDelayLoadIdx->ImportNameTableRVA);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, ImportNameTableRVA));
-
-						ImGui::BulletText("[%s] BoundImportAddressTableRVA: 0x%X", "DWORD", pImageDelayLoadIdx->BoundImportAddressTableRVA);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, BoundImportAddressTableRVA));
-
-						ImGui::BulletText("[%s] UnloadInformationTableRVA: 0x%X", "DWORD", pImageDelayLoadIdx->UnloadInformationTableRVA);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, UnloadInformationTableRVA));
-
-						ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageDelayLoadIdx->TimeDateStamp);
-						if (PRSR_TOOLTIP)
-							ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, TimeDateStamp));
-
-						ImGui::TreePop();
-					}
-				}
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT);
 			}
 			else
 				ImGui::Text("This executable doesn't have delay load imports.");
@@ -1785,6 +964,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
+		// Parsing the Component Object Model (COM) descriptor directory.
 		const PIMAGE_DATA_DIRECTORY pComDescr = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR];
 		BaseOffset = Helpers::RVAToFileOffset(pComDescr->VirtualAddress);
 
@@ -1796,146 +976,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_COR20_HEADER pImageCor20Header = reinterpret_cast<PIMAGE_COR20_HEADER>((UINT_PTR)g_pDosHeader + BaseOffset);
-
-				ImGui::BulletText("[%s] cb: 0x%X", "DWORD", pImageCor20Header->cb);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, cb));
-
-				ImGui::BulletText("[%s] MajorRuntimeVersion: 0x%X", "WORD", pImageCor20Header->MajorRuntimeVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MajorRuntimeVersion));
-
-				ImGui::BulletText("[%s] MinorRuntimeVersion: 0x%X", "WORD", pImageCor20Header->MinorRuntimeVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MinorRuntimeVersion));
-
-				const bool Collapsing_ImageCor20Header_MetaData = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] MetaData", "IMAGE_DATA_DIRECTORY");
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MetaData));
-
-				if (Collapsing_ImageCor20Header_MetaData)
-				{
-					ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->MetaData.VirtualAddress);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MetaData.VirtualAddress));
-
-					ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->MetaData.Size);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MetaData.Size));
-
-					ImGui::TreePop();
-				}
-
-				ImGui::BulletText("[%s] Flags: 0x%X", "DWORD", pImageCor20Header->Flags);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, Flags));
-
-				ImGui::BulletText("[%s] %s: 0x%X", "DWORD", (pImageCor20Header->Flags & COMIMAGE_FLAGS_NATIVE_ENTRYPOINT) ? "EntryPointRVA" : "EntryPointToken", pImageCor20Header->EntryPointRVA);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, EntryPointRVA));
-
-				const bool Collapsing_ImageCor20Header_Resources = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] Resources", "IMAGE_DATA_DIRECTORY");
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, Resources));
-
-				if (Collapsing_ImageCor20Header_Resources)
-				{
-					ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->Resources.VirtualAddress);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, Resources.VirtualAddress));
-
-					ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->Resources.Size);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, Resources.Size));
-
-					ImGui::TreePop();
-				}
-
-				const bool Collapsing_ImageCor20Header_StrongNameSignature = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] StrongNameSignature", "IMAGE_DATA_DIRECTORY");
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, StrongNameSignature));
-
-				if (Collapsing_ImageCor20Header_StrongNameSignature)
-				{
-					ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->StrongNameSignature.VirtualAddress);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, StrongNameSignature.VirtualAddress));
-
-					ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->StrongNameSignature.Size);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, StrongNameSignature.Size));
-
-					ImGui::TreePop();
-				}
-
-				const bool Collapsing_ImageCor20Header_CodeManagerTable = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] CodeManagerTable", "IMAGE_DATA_DIRECTORY");
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, CodeManagerTable));
-
-				if (Collapsing_ImageCor20Header_CodeManagerTable)
-				{
-					ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->CodeManagerTable.VirtualAddress);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, CodeManagerTable.VirtualAddress));
-
-					ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->CodeManagerTable.Size);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, CodeManagerTable.Size));
-
-					ImGui::TreePop();
-				}
-
-				const bool Collapsing_ImageCor20Header_VTableFixups = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] VTableFixups", "IMAGE_DATA_DIRECTORY");
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, VTableFixups));
-
-				if (Collapsing_ImageCor20Header_VTableFixups)
-				{
-					ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->VTableFixups.VirtualAddress);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, VTableFixups.VirtualAddress));
-
-					ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->VTableFixups.Size);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, VTableFixups.Size));
-
-					ImGui::TreePop();
-				}
-
-				const bool Collapsing_ImageCor20Header_ExportAddressTableJumps = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] ExportAddressTableJumps", "IMAGE_DATA_DIRECTORY");
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ExportAddressTableJumps));
-
-				if (Collapsing_ImageCor20Header_ExportAddressTableJumps)
-				{
-					ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->ExportAddressTableJumps.VirtualAddress);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ExportAddressTableJumps.VirtualAddress));
-
-					ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->ExportAddressTableJumps.Size);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ExportAddressTableJumps.Size));
-
-					ImGui::TreePop();
-				}
-
-				const bool Collapsing_ImageCor20Header_ManagedNativeHeader = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] ManagedNativeHeader", "IMAGE_DATA_DIRECTORY");
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ManagedNativeHeader));
-
-				if (Collapsing_ImageCor20Header_ManagedNativeHeader)
-				{
-					ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->ManagedNativeHeader.VirtualAddress);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ManagedNativeHeader.VirtualAddress));
-
-					ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->ManagedNativeHeader.Size);
-					if (PRSR_TOOLTIP)
-						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ManagedNativeHeader.Size));
-
-					ImGui::TreePop();
-				}
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR);
 			}
 			else
 				ImGui::Text("This executable doesn't have COM.");
@@ -1962,8 +1003,7 @@ BOOLEAN Parser::Render()
 
 		if (ImGui::BeginTabItem("Details"))
 		{
-			
-
+			ImGui::Text("Not done yet.");
 
 			ImGui::EndTabItem();
 		}
@@ -2103,10 +1143,170 @@ VOID Parser::Helpers::Parse(DWORD BaseOffset, WORD Id)
 {
 	switch (Id)
 	{
-		case IMAGE_DIRECTORY_ENTRY_RESOURCE:
-		{
-			ParseRsrcDir(BaseOffset);
+	case IMAGE_DIRECTORY_ENTRY_EXPORT:
+	{
+		ParseExportDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_IMPORT:
+	{
+		ParseImportDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_RESOURCE:
+	{
+		ParseRsrcDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_EXCEPTION:
+	{
+		ParseExceptionDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_SECURITY:
+	{
+		ParseSecurityDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_BASERELOC:
+	{
+		ParseBaseRelocDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_DEBUG:
+	{
+		ParseDebugDir(BaseOffset);
+		break;
+	}
+	// Architecture
+	// GlobalPtr
+	case IMAGE_DIRECTORY_ENTRY_TLS:
+	{
+		ParseTlsDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG:
+	{
+		ParseLoadCfgDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT:
+	{
+		ParseBoundImportDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_IAT:
+	{
+		ParseIATDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT:
+	{
+		ParseDelayLoadImportDir(BaseOffset);
+		break;
+	}
+	case IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR:
+	{
+		ParseCOMDir(BaseOffset);
+		break;
+	}
+	}
+}
+
+VOID Parser::Helpers::ParseExportDir(DWORD BaseOffset)
+{
+	const PIMAGE_EXPORT_DIRECTORY pImageExportDir = reinterpret_cast<PIMAGE_EXPORT_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageExportDir->Characteristics);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, Characteristics));
+
+	ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageExportDir->TimeDateStamp);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, TimeDateStamp));
+
+	ImGui::BulletText("[%s] MajorVersion: 0x%X", "WORD", pImageExportDir->MajorVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, MajorVersion));
+
+	ImGui::BulletText("[%s] MinorVersion: 0x%X", "WORD", pImageExportDir->MinorVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, MinorVersion));
+
+	ImGui::BulletText("[%s] Name: 0x%X", "DWORD", pImageExportDir->Name);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, Name));
+
+	ImGui::BulletText("[%s] Base: 0x%X", "DWORD", pImageExportDir->Base);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, Base));
+
+	ImGui::BulletText("[%s] NumberOfFunctions: 0x%X", "DWORD", pImageExportDir->NumberOfFunctions);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, NumberOfFunctions));
+
+	ImGui::BulletText("[%s] NumberOfNames: 0x%X", "DWORD", pImageExportDir->NumberOfNames);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, NumberOfNames));
+
+	ImGui::BulletText("[%s] AddressOfFunctions: 0x%X", "DWORD", pImageExportDir->AddressOfFunctions);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, AddressOfFunctions));
+
+	ImGui::BulletText("[%s] AddressOfNames: 0x%X", "DWORD", pImageExportDir->AddressOfNames);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, AddressOfNames));
+
+	ImGui::BulletText("[%s] AddressOfNameOrdinals: 0x%X", "DWORD", pImageExportDir->AddressOfNameOrdinals);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, AddressOfNameOrdinals));
+}
+
+VOID Parser::Helpers::ParseImportDir(DWORD BaseOffset)
+{
+	const PIMAGE_IMPORT_DESCRIPTOR pImageImportDescr = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	static std::vector<char*> Collapsing_ImageImportDescrIds;
+	for (int i = 0; ; i++)
+	{
+		if (Collapsing_ImageImportDescrIds.size() <= i)
+			Collapsing_ImageImportDescrIds.push_back(nullptr);
+
+		PIMAGE_IMPORT_DESCRIPTOR pImageImportDescrIdx = &pImageImportDescr[i];
+
+		BaseOffset = (BYTE*)pImageImportDescrIdx - (BYTE*)g_pDosHeader;
+
+		if (!pImageImportDescrIdx->Characteristics)
 			break;
+
+		const char* pImportName = reinterpret_cast<const char*>((BYTE*)g_pDosHeader + pImageImportDescrIdx->Name);
+		bool Collapsing_ImageImportDescrIdx = ImGui::TreeNode(&Collapsing_ImageImportDescrIds[i], "[%i] %s: 0x%X", i, pImportName, BaseOffset);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, Characteristics));
+
+		if (Collapsing_ImageImportDescrIdx)
+		{
+			ImGui::BulletText("[%s] OriginalFirstThunk: 0x%X", "DWORD", pImageImportDescrIdx->OriginalFirstThunk);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, OriginalFirstThunk));
+
+			ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageImportDescrIdx->TimeDateStamp);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, TimeDateStamp));
+
+			ImGui::BulletText("[%s] ForwarderChain: 0x%X", "DWORD", pImageImportDescrIdx->ForwarderChain);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, ForwarderChain));
+
+			ImGui::BulletText("[%s] Name: 0x%X", "DWORD", pImageImportDescrIdx->Name);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, Name));
+
+			ImGui::BulletText("[%s] FirstThunk: 0x%X", "DWORD", pImageImportDescrIdx->FirstThunk);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, FirstThunk));
+
+			ImGui::TreePop();
 		}
 	}
 }
@@ -2197,6 +1397,939 @@ VOID Parser::Helpers::ParseRsrcDir(DWORD BaseOffset)
 			ImGui::TreePop();
 		}
 		ImGui::Spacing();
+	}
+}
+
+VOID Parser::Helpers::ParseExceptionDir(DWORD BaseOffset)
+{
+	const PIMAGE_DATA_DIRECTORY pExceptionDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
+
+	const PIMAGE_RUNTIME_FUNCTION_ENTRY pRuntimeFunctions = reinterpret_cast<PIMAGE_RUNTIME_FUNCTION_ENTRY>((UINT_PTR)g_pDosHeader + BaseOffset);
+	const DWORD NumberOfRuntimeFunctions = pExceptionDir->Size / sizeof(IMAGE_RUNTIME_FUNCTION_ENTRY);
+
+	static std::vector<char*> Collapsing_ImageImportDescrIds(NumberOfRuntimeFunctions);
+	Collapsing_ImageImportDescrIds.resize(NumberOfRuntimeFunctions);
+
+	for (int i = 0; i < NumberOfRuntimeFunctions; i++)
+	{
+		PIMAGE_RUNTIME_FUNCTION_ENTRY pRuntimeFunctionIdx = &pRuntimeFunctions[i];
+
+		BaseOffset = (BYTE*)pRuntimeFunctionIdx - (BYTE*)g_pDosHeader;
+
+		bool Collapsing_RuntimeFunctionIdx = ImGui::TreeNode(&Collapsing_ImageImportDescrIds[i], "IMAGE_RUNTIME_FUNCTION_ENTRY[%i]: 0x%X", i, BaseOffset);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RUNTIME_FUNCTION_ENTRY, BeginAddress));
+
+		if (Collapsing_RuntimeFunctionIdx)
+		{
+			ImGui::BulletText("[%s] BeginAddress: 0x%X", "DWORD", pRuntimeFunctionIdx->BeginAddress);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RUNTIME_FUNCTION_ENTRY, BeginAddress));
+
+			ImGui::BulletText("[%s] EndAddress: 0x%X", "DWORD", pRuntimeFunctionIdx->EndAddress);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RUNTIME_FUNCTION_ENTRY, EndAddress));
+
+			ImGui::BulletText("[%s] UnwindData: 0x%X", "DWORD", pRuntimeFunctionIdx->UnwindData);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RUNTIME_FUNCTION_ENTRY, UnwindData));
+
+			ImGui::TreePop();
+		}
+	}
+}
+
+VOID Parser::Helpers::ParseSecurityDir(DWORD BaseOffset)
+{
+	const LPWIN_CERTIFICATE pWinCertificate = reinterpret_cast<LPWIN_CERTIFICATE>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	ImGui::BulletText("[%s] dwLength: 0x%X", "DWORD", pWinCertificate->dwLength);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(WIN_CERTIFICATE, dwLength));
+
+	ImGui::BulletText("[%s] wRevision: 0x%X", "WORD", pWinCertificate->wRevision);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(WIN_CERTIFICATE, wRevision));
+
+	ImGui::BulletText("[%s] wCertificateType: 0x%X", "WORD", pWinCertificate->wCertificateType);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(WIN_CERTIFICATE, wCertificateType));
+
+	ImGui::BulletText("[%s] bCertificate[1]: 0x%X", "BYTE", pWinCertificate->bCertificate);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(WIN_CERTIFICATE, bCertificate));
+}
+
+VOID Parser::Helpers::ParseBaseRelocDir(DWORD BaseOffset)
+{
+	const PIMAGE_DATA_DIRECTORY pRelocDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+
+	const PIMAGE_BASE_RELOCATION pImageBaseReloc = reinterpret_cast<PIMAGE_BASE_RELOCATION>((UINT_PTR)g_pDosHeader + BaseOffset);
+	const DWORD NumberOfRelocs = pRelocDir->Size / sizeof(IMAGE_BASE_RELOCATION);
+
+	static std::vector<char*> Collapsing_ImageBaseRelocIds(NumberOfRelocs);
+	Collapsing_ImageBaseRelocIds.resize(NumberOfRelocs);
+
+	PIMAGE_BASE_RELOCATION pImageBaseRelocIdx = pImageBaseReloc;
+	for (int i = 0; i < NumberOfRelocs; i++)
+	{
+		const DWORD NumberOfRelocEntries = (pImageBaseReloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
+
+		BaseOffset = (BYTE*)pImageBaseRelocIdx - (BYTE*)g_pDosHeader;
+
+		bool Collapsing_ImageBaseRelocIdx = ImGui::TreeNode(&Collapsing_ImageBaseRelocIds[i], "[%i] IMAGE_BASE_RELOCATION: 0x%X", i, BaseOffset);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BASE_RELOCATION, VirtualAddress));
+
+		if (Collapsing_ImageBaseRelocIdx)
+		{
+			ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageBaseRelocIdx->VirtualAddress);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BASE_RELOCATION, VirtualAddress));
+
+			ImGui::BulletText("[%s] SizeOfBlock: 0x%X", "DWORD", pImageBaseRelocIdx->SizeOfBlock);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BASE_RELOCATION, SizeOfBlock));
+
+			ImGui::Spacing();
+
+			std::vector<char*> Collapsing_ImageBaseRelocEntryIds(NumberOfRelocEntries);
+			for (int i2 = 0; i2 < NumberOfRelocEntries; i2++)
+			{
+				const PWORD RelocEntry = &reinterpret_cast<PWORD>(pImageBaseRelocIdx + 1)[i2];
+
+				BaseOffset = (BYTE*)RelocEntry - (BYTE*)g_pDosHeader;
+
+				ImGui::Text("[%i] Type: 0x%X |", i2, (*RelocEntry >> 12));
+				if (PRSR_TOOLTIP)
+					ImGui::SetTooltip("Offset: 0x%X", BaseOffset);
+
+				ImGui::SameLine();
+
+				ImGui::Text("Offset: 0x%X", (*RelocEntry & 0xFFF));
+				if (PRSR_TOOLTIP)
+					ImGui::SetTooltip("Offset: 0x%X", BaseOffset);
+
+				ImGui::Spacing();
+			}
+
+			ImGui::TreePop();
+		}
+
+		pImageBaseRelocIdx = reinterpret_cast<PIMAGE_BASE_RELOCATION>((BYTE*)pImageBaseRelocIdx + pImageBaseRelocIdx->SizeOfBlock);
+	}
+}
+
+VOID Parser::Helpers::ParseDebugDir(DWORD BaseOffset)
+{
+	const PIMAGE_DEBUG_DIRECTORY pImageDebugDir = reinterpret_cast<PIMAGE_DEBUG_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageDebugDir->Characteristics);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, Characteristics));
+
+	ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageDebugDir->TimeDateStamp);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, TimeDateStamp));
+
+	ImGui::BulletText("[%s] MajorVersion: 0x%X", "WORD", pImageDebugDir->MajorVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, MajorVersion));
+
+	ImGui::BulletText("[%s] MinorVersion: 0x%X", "WORD", pImageDebugDir->MinorVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, MinorVersion));
+
+	ImGui::BulletText("[%s] Type: 0x%X", "DWORD", pImageDebugDir->Type);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, Type));
+
+	ImGui::BulletText("[%s] SizeOfData: 0x%X", "DWORD", pImageDebugDir->SizeOfData);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, SizeOfData));
+
+	ImGui::BulletText("[%s] AddressOfRawData: 0x%X", "DWORD", pImageDebugDir->AddressOfRawData);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, AddressOfRawData));
+
+	ImGui::BulletText("[%s] PointerToRawData: 0x%X", "DWORD", pImageDebugDir->PointerToRawData);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, PointerToRawData));
+
+	ImGui::Spacing();
+
+	BaseOffset = pImageDebugDir->PointerToRawData;
+
+	static const PDWORD pCvInfo = reinterpret_cast<PDWORD>((UINT_PTR)g_pDosHeader + BaseOffset);
+	switch (*pCvInfo)
+	{
+	case CV_SIGNATURE_NB10:
+	{
+		const PCV_INFO_PDB20 pCvInfoPdb20 = reinterpret_cast<PCV_INFO_PDB20>(pCvInfo);
+
+		ImGui::Text("[%s] CvSignature: 0x%X", "DWORD", pCvInfoPdb20->CvSignature);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, CvSignature));
+
+		ImGui::Text("[%s] Offset: 0x%X", "DWORD", pCvInfoPdb20->Offset);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, Offset));
+
+		ImGui::Text("[%s] Signature: 0x%X", "DWORD", pCvInfoPdb20->Signature);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, Signature));
+
+		ImGui::Text("[%s] Age: 0x%X", "DWORD", pCvInfoPdb20->Age);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, Age));
+
+		ImGui::Text("[%s] PdbFileName[MAX_PATH]: %s", "CHAR", pCvInfoPdb20->PdbFileName);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB20, PdbFileName));
+
+		break;
+	}
+	case CV_SIGNATURE_RSDS:
+	{
+		const PCV_INFO_PDB70 pCvInfoPdb70 = reinterpret_cast<PCV_INFO_PDB70>(pCvInfo);
+
+		ImGui::Text("[%s] CvSignature: 0x%X", "DWORD", pCvInfoPdb70->CvSignature);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB70, CvSignature));
+
+		ImGui::Text("[%s] Signature: 0x%X", "DWORD", pCvInfoPdb70->Signature);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB70, Signature));
+
+		ImGui::Text("[%s] Age: 0x%X", "DWORD", pCvInfoPdb70->Age);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB70, Age));
+
+		ImGui::Text("[%s] PdbFileName[MAX_PATH]: %s", "CHAR", pCvInfoPdb70->PdbFileName);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(CV_INFO_PDB70, PdbFileName));
+
+		break;
+	}
+	}
+}
+
+// Architecture
+// GlobalPtr
+
+VOID Parser::Helpers::ParseTlsDir(DWORD BaseOffset)
+{
+	const PIMAGE_TLS_DIRECTORY pImageTlsDir = reinterpret_cast<PIMAGE_TLS_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	// The absolute virtual addresses aren't converted, it's as they are in here.
+#ifdef _WIN64
+	ImGui::BulletText("[%s] StartAddressOfRawData: 0x%X", "ULONGLONG", pImageTlsDir->StartAddressOfRawData);
+#else
+	ImGui::BulletText("[%s] StartAddressOfRawData: 0x%X", "ULONG", pImageTlsDir->StartAddressOfRawData);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, StartAddressOfRawData));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] EndAddressOfRawData: 0x%X", "ULONGLONG", pImageTlsDir->EndAddressOfRawData);
+#else
+	ImGui::BulletText("[%s] EndAddressOfRawData: 0x%X", "ULONG", pImageTlsDir->EndAddressOfRawData);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, EndAddressOfRawData));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] AddressOfIndex: 0x%X", "ULONGLONG", pImageTlsDir->AddressOfIndex);
+#else
+	ImGui::BulletText("[%s] AddressOfIndex: 0x%X", "ULONG", pImageTlsDir->AddressOfIndex);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, AddressOfIndex));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] AddressOfCallBacks: 0x%X", "ULONGLONG", pImageTlsDir->AddressOfCallBacks);
+#else
+	ImGui::BulletText("[%s] AddressOfCallBacks: 0x%X", "ULONG", pImageTlsDir->AddressOfCallBacks);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, AddressOfCallBacks));
+
+	ImGui::BulletText("[%s] SizeOfZeroFill: 0x%X", "DWORD", pImageTlsDir->SizeOfZeroFill);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, SizeOfZeroFill));
+
+	ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageTlsDir->Characteristics);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, Characteristics));
+
+	ImGui::Spacing();
+
+	// pImageTlsDir->AddressOfCallBacks is an absolute virtual address (based on g_pOptionalHeader->ImageBase), so we are subtracting g_pOptionalHeader->ImageBase from it to get
+	// the virtual address, then convert that to file offset so we can use it.
+	const DWORD TlsCallbacksOffset = Helpers::RVAToFileOffset(pImageTlsDir->AddressOfCallBacks - g_pOptionalHeader->ImageBase);
+
+	for (int i = 0; ; i++)
+	{
+		PIMAGE_TLS_CALLBACK pTlsCallbackIdx = reinterpret_cast<PIMAGE_TLS_CALLBACK*>((BYTE*)g_pDosHeader + TlsCallbacksOffset)[i];
+		if (!pTlsCallbackIdx)
+			break;
+
+		// Same
+		BaseOffset = Helpers::RVAToFileOffset((UINT_PTR)pTlsCallbackIdx - g_pOptionalHeader->ImageBase);
+
+		ImGui::Text("PIMAGE_TLS_CALLBACK[%i]: 0x%X", i, pTlsCallbackIdx);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset);
+
+		ImGui::Spacing();
+	}
+}
+
+VOID Parser::Helpers::ParseLoadCfgDir(DWORD BaseOffset)
+{
+	const PIMAGE_LOAD_CONFIG_DIRECTORY pImageLoadConfigDir = reinterpret_cast<PIMAGE_LOAD_CONFIG_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageLoadConfigDir->Size);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, Size));
+
+	ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageLoadConfigDir->TimeDateStamp);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, TimeDateStamp));
+
+	ImGui::BulletText("[%s] MajorVersion: 0x%X", "WORD", pImageLoadConfigDir->MajorVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, MajorVersion));
+
+	ImGui::BulletText("[%s] MinorVersion: 0x%X", "WORD", pImageLoadConfigDir->MinorVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, MinorVersion));
+
+	ImGui::BulletText("[%s] GlobalFlagsClear: 0x%X", "DWORD", pImageLoadConfigDir->GlobalFlagsClear);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GlobalFlagsClear));
+
+	ImGui::BulletText("[%s] GlobalFlagsSet: 0x%X", "DWORD", pImageLoadConfigDir->GlobalFlagsSet);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GlobalFlagsSet));
+
+	ImGui::BulletText("[%s] CriticalSectionDefaultTimeout: 0x%X", "DWORD", pImageLoadConfigDir->CriticalSectionDefaultTimeout);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CriticalSectionDefaultTimeout));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] DeCommitFreeBlockThreshold: 0x%X", "ULONGLONG", pImageLoadConfigDir->DeCommitFreeBlockThreshold);
+#else
+	ImGui::BulletText("[%s] DeCommitFreeBlockThreshold: 0x%X", "ULONG", pImageLoadConfigDir->DeCommitFreeBlockThreshold);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DeCommitFreeBlockThreshold));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] DeCommitTotalFreeThreshold: 0x%X", "ULONGLONG", pImageLoadConfigDir->DeCommitTotalFreeThreshold);
+#else
+	ImGui::BulletText("[%s] DeCommitTotalFreeThreshold: 0x%X", "ULONG", pImageLoadConfigDir->DeCommitTotalFreeThreshold);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DeCommitTotalFreeThreshold));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] LockPrefixTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->LockPrefixTable);
+#else
+	ImGui::BulletText("[%s] LockPrefixTable: 0x%X", "ULONG", pImageLoadConfigDir->LockPrefixTable);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, LockPrefixTable));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] LockPrefixTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->LockPrefixTable);
+#else
+	ImGui::BulletText("[%s] LockPrefixTable: 0x%X", "ULONG", pImageLoadConfigDir->LockPrefixTable);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, LockPrefixTable));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] MaximumAllocationSize: 0x%X", "ULONGLONG", pImageLoadConfigDir->MaximumAllocationSize);
+#else
+	ImGui::BulletText("[%s] MaximumAllocationSize: 0x%X", "ULONG", pImageLoadConfigDir->MaximumAllocationSize);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, MaximumAllocationSize));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] VirtualMemoryThreshold: 0x%X", "ULONGLONG", pImageLoadConfigDir->VirtualMemoryThreshold);
+#else
+	ImGui::BulletText("[%s] VirtualMemoryThreshold: 0x%X", "ULONG", pImageLoadConfigDir->VirtualMemoryThreshold);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, VirtualMemoryThreshold));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] ProcessAffinityMask: 0x%X", "ULONGLONG", pImageLoadConfigDir->ProcessAffinityMask);
+#else
+	ImGui::BulletText("[%s] ProcessAffinityMask: 0x%X", "ULONG", pImageLoadConfigDir->ProcessAffinityMask);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, ProcessAffinityMask));
+
+	ImGui::BulletText("[%s] ProcessHeapFlags: 0x%X", "DWORD", pImageLoadConfigDir->ProcessHeapFlags);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, ProcessHeapFlags));
+
+	ImGui::BulletText("[%s] CSDVersion: 0x%X", "WORD", pImageLoadConfigDir->CSDVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CSDVersion));
+
+	ImGui::BulletText("[%s] DependentLoadFlags: 0x%X", "WORD", pImageLoadConfigDir->DependentLoadFlags);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DependentLoadFlags));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] EditList: 0x%X", "ULONGLONG", pImageLoadConfigDir->EditList);
+#else
+	ImGui::BulletText("[%s] EditList: 0x%X", "ULONG", pImageLoadConfigDir->EditList);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, EditList));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] SecurityCookie: 0x%X", "ULONGLONG", pImageLoadConfigDir->SecurityCookie);
+#else
+	ImGui::BulletText("[%s] SecurityCookie: 0x%X", "ULONG", pImageLoadConfigDir->SecurityCookie);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, SecurityCookie));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] SEHandlerTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->SEHandlerTable);
+#else
+	ImGui::BulletText("[%s] SEHandlerTable: 0x%X", "ULONG", pImageLoadConfigDir->SEHandlerTable);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, SEHandlerTable));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] SEHandlerCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->SEHandlerCount);
+#else
+	ImGui::BulletText("[%s] SEHandlerCount: 0x%X", "ULONG", pImageLoadConfigDir->SEHandlerCount);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, SEHandlerCount));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardCFCheckFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardCFCheckFunctionPointer);
+#else
+	ImGui::BulletText("[%s] GuardCFCheckFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardCFCheckFunctionPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardCFCheckFunctionPointer));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardCFDispatchFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardCFDispatchFunctionPointer);
+#else
+	ImGui::BulletText("[%s] GuardCFDispatchFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardCFDispatchFunctionPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardCFDispatchFunctionPointer));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardCFFunctionTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardCFFunctionTable);
+#else
+	ImGui::BulletText("[%s] GuardCFFunctionTable: 0x%X", "ULONG", pImageLoadConfigDir->GuardCFFunctionTable);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardCFFunctionTable));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardCFFunctionCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardCFFunctionCount);
+#else
+	ImGui::BulletText("[%s] GuardCFFunctionCount: 0x%X", "ULONG", pImageLoadConfigDir->GuardCFFunctionCount);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardCFFunctionCount));
+
+	ImGui::BulletText("[%s] GuardFlags: 0x%X", "DWORD", pImageLoadConfigDir->GuardFlags);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardFlags));
+
+	const bool Collapsing_ImageLoadConfigDir_CodeIntegrity = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] CodeIntegrity", "IMAGE_LOAD_CONFIG_CODE_INTEGRITY");
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity));
+
+	if (Collapsing_ImageLoadConfigDir_CodeIntegrity)
+	{
+		ImGui::BulletText("[%s] Flags: 0x%X", "WORD", pImageLoadConfigDir->CodeIntegrity.Flags);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity.Flags));
+
+		ImGui::BulletText("[%s] Catalog: 0x%X", "WORD", pImageLoadConfigDir->CodeIntegrity.Catalog);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity.Catalog));
+
+		ImGui::BulletText("[%s] CatalogOffset: 0x%X", "DWORD", pImageLoadConfigDir->CodeIntegrity.CatalogOffset);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity.CatalogOffset));
+
+		ImGui::BulletText("[%s] Reserved: 0x%X", "DWORD", pImageLoadConfigDir->CodeIntegrity.Reserved);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CodeIntegrity.Reserved));
+
+		ImGui::TreePop();
+	}
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardAddressTakenIatEntryTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardAddressTakenIatEntryTable);
+#else
+	ImGui::BulletText("[%s] GuardAddressTakenIatEntryTable: 0x%X", "ULONG", pImageLoadConfigDir->GuardAddressTakenIatEntryTable);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardAddressTakenIatEntryTable));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardAddressTakenIatEntryCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardAddressTakenIatEntryCount);
+#else
+	ImGui::BulletText("[%s] GuardAddressTakenIatEntryCount: 0x%X", "ULONG", pImageLoadConfigDir->GuardAddressTakenIatEntryCount);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardAddressTakenIatEntryCount));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardLongJumpTargetTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardLongJumpTargetTable);
+#else
+	ImGui::BulletText("[%s] GuardLongJumpTargetTable: 0x%X", "ULONG", pImageLoadConfigDir->GuardLongJumpTargetTable);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardLongJumpTargetTable));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardLongJumpTargetCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardLongJumpTargetCount);
+#else
+	ImGui::BulletText("[%s] GuardLongJumpTargetCount: 0x%X", "ULONG", pImageLoadConfigDir->GuardLongJumpTargetCount);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardLongJumpTargetCount));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] DynamicValueRelocTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->DynamicValueRelocTable);
+#else
+	ImGui::BulletText("[%s] DynamicValueRelocTable: 0x%X", "ULONG", pImageLoadConfigDir->DynamicValueRelocTable);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DynamicValueRelocTable));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] CHPEMetadataPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->CHPEMetadataPointer);
+#else
+	ImGui::BulletText("[%s] CHPEMetadataPointer: 0x%X", "ULONG", pImageLoadConfigDir->CHPEMetadataPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CHPEMetadataPointer));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardRFFailureRoutine: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardRFFailureRoutine);
+#else
+	ImGui::BulletText("[%s] GuardRFFailureRoutine: 0x%X", "ULONG", pImageLoadConfigDir->GuardRFFailureRoutine);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardRFFailureRoutine));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardRFFailureRoutineFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardRFFailureRoutineFunctionPointer);
+#else
+	ImGui::BulletText("[%s] GuardRFFailureRoutineFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardRFFailureRoutineFunctionPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardRFFailureRoutineFunctionPointer));
+
+	ImGui::BulletText("[%s] DynamicValueRelocTableOffset: 0x%X", "DWORD", pImageLoadConfigDir->DynamicValueRelocTableOffset);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DynamicValueRelocTableOffset));
+
+	ImGui::BulletText("[%s] DynamicValueRelocTableSection: 0x%X", "WORD", pImageLoadConfigDir->DynamicValueRelocTableSection);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, DynamicValueRelocTableSection));
+
+	ImGui::BulletText("[%s] Reserved2: 0x%X", "WORD", pImageLoadConfigDir->Reserved2);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, Reserved2));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardRFVerifyStackPointerFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardRFVerifyStackPointerFunctionPointer);
+#else
+	ImGui::BulletText("[%s] GuardRFVerifyStackPointerFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardRFVerifyStackPointerFunctionPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardRFVerifyStackPointerFunctionPointer));
+
+	ImGui::BulletText("[%s] HotPatchTableOffset: 0x%X", "DWORD", pImageLoadConfigDir->HotPatchTableOffset);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, HotPatchTableOffset));
+
+	ImGui::BulletText("[%s] Reserved3: 0x%X", "DWORD", pImageLoadConfigDir->Reserved3);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, Reserved3));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] EnclaveConfigurationPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->EnclaveConfigurationPointer);
+#else
+	ImGui::BulletText("[%s] EnclaveConfigurationPointer: 0x%X", "ULONG", pImageLoadConfigDir->EnclaveConfigurationPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, EnclaveConfigurationPointer));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] VolatileMetadataPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->VolatileMetadataPointer);
+#else
+	ImGui::BulletText("[%s] VolatileMetadataPointer: 0x%X", "ULONG", pImageLoadConfigDir->VolatileMetadataPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, VolatileMetadataPointer));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardEHContinuationTable: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardEHContinuationTable);
+#else
+	ImGui::BulletText("[%s] GuardEHContinuationTable: 0x%X", "ULONG", pImageLoadConfigDir->GuardEHContinuationTable);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardEHContinuationTable));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardEHContinuationCount: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardEHContinuationCount);
+#else
+	ImGui::BulletText("[%s] GuardEHContinuationCount: 0x%X", "ULONG", pImageLoadConfigDir->GuardEHContinuationCount);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardEHContinuationCount));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardXFGCheckFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardXFGCheckFunctionPointer);
+#else
+	ImGui::BulletText("[%s] GuardXFGCheckFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardXFGCheckFunctionPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardXFGCheckFunctionPointer));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardXFGDispatchFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardXFGDispatchFunctionPointer);
+#else
+	ImGui::BulletText("[%s] GuardXFGDispatchFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardXFGDispatchFunctionPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardXFGDispatchFunctionPointer));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardXFGTableDispatchFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardXFGTableDispatchFunctionPointer);
+#else
+	ImGui::BulletText("[%s] GuardXFGTableDispatchFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardXFGTableDispatchFunctionPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardXFGTableDispatchFunctionPointer));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] CastGuardOsDeterminedFailureMode: 0x%X", "ULONGLONG", pImageLoadConfigDir->CastGuardOsDeterminedFailureMode);
+#else
+	ImGui::BulletText("[%s] CastGuardOsDeterminedFailureMode: 0x%X", "ULONG", pImageLoadConfigDir->CastGuardOsDeterminedFailureMode);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, CastGuardOsDeterminedFailureMode));
+
+#ifdef _WIN64
+	ImGui::BulletText("[%s] GuardMemcpyFunctionPointer: 0x%X", "ULONGLONG", pImageLoadConfigDir->GuardMemcpyFunctionPointer);
+#else
+	ImGui::BulletText("[%s] GuardMemcpyFunctionPointer: 0x%X", "ULONG", pImageLoadConfigDir->GuardMemcpyFunctionPointer);
+#endif
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, GuardMemcpyFunctionPointer));
+}
+
+VOID Parser::Helpers::ParseBoundImportDir(DWORD BaseOffset)
+{
+	const PIMAGE_BOUND_IMPORT_DESCRIPTOR pImageBoundImportDescr = reinterpret_cast<PIMAGE_BOUND_IMPORT_DESCRIPTOR>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	static std::vector<char*> Collapsing_ImageBoundImportDescrIds;
+
+	DWORD ForwarderRefCount = 0;
+	for (int i = 0; ; i++)
+	{
+		if (Collapsing_ImageBoundImportDescrIds.size() <= i)
+			Collapsing_ImageBoundImportDescrIds.push_back(nullptr);
+
+		const PIMAGE_BOUND_IMPORT_DESCRIPTOR pImageBoundImportDescrIdx = &pImageBoundImportDescr[i];
+
+		BaseOffset = (BYTE*)pImageBoundImportDescrIdx - (BYTE*)g_pDosHeader;
+
+		if (!pImageBoundImportDescrIdx->TimeDateStamp)
+			break;
+
+		const char* pBoundImportName = reinterpret_cast<const char*>((BYTE*)pImageBoundImportDescr + pImageBoundImportDescrIdx->OffsetModuleName);
+		bool Collapsing_ImageBoundImportDescrIdx = ImGui::TreeNode(&Collapsing_ImageBoundImportDescrIds[i], "[%i] %s - %s: 0x%X", i, ForwarderRefCount ? "IMAGE_BOUND_FORWARDER_REF" : "IMAGE_BOUND_IMPORT_DESCRIPTOR", pBoundImportName, BaseOffset);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BOUND_IMPORT_DESCRIPTOR, TimeDateStamp));
+
+		if (Collapsing_ImageBoundImportDescrIdx)
+		{
+			ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageBoundImportDescrIdx->TimeDateStamp);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BOUND_IMPORT_DESCRIPTOR, TimeDateStamp));
+
+			ImGui::BulletText("[%s] OffsetModuleName: 0x%X", "WORD", pImageBoundImportDescrIdx->OffsetModuleName);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BOUND_IMPORT_DESCRIPTOR, OffsetModuleName));
+
+			ImGui::BulletText("[%s] %s: 0x%X", "WORD", ForwarderRefCount ? "Reserved" : "NumberOfModuleForwarderRefs", pImageBoundImportDescrIdx->NumberOfModuleForwarderRefs);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BOUND_IMPORT_DESCRIPTOR, NumberOfModuleForwarderRefs));
+
+			ImGui::TreePop();
+		}
+
+		if (ForwarderRefCount)
+			ForwarderRefCount--;
+		else
+			ForwarderRefCount = pImageBoundImportDescrIdx->NumberOfModuleForwarderRefs;
+	}
+}
+
+VOID Parser::Helpers::ParseIATDir(DWORD BaseOffset)
+{
+	const PIMAGE_THUNK_DATA pImageThunkData = reinterpret_cast<PIMAGE_THUNK_DATA>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	static std::vector<char*> Collapsing_ImageThunkDataIds;
+	for (int i = 0; ; i++)
+	{
+		if (Collapsing_ImageThunkDataIds.size() <= i)
+			Collapsing_ImageThunkDataIds.push_back(nullptr);
+
+		const PIMAGE_THUNK_DATA pImageThunkDataIdx = &pImageThunkData[i];
+
+		BaseOffset = (BYTE*)pImageThunkDataIdx - (BYTE*)g_pDosHeader;
+
+		if (!pImageThunkDataIdx->u1.Function)
+			break;
+
+		bool Collapsing_ImageThunkDataIdx = ImGui::TreeNode(&Collapsing_ImageThunkDataIds[i], "[%i] IMAGE_THUNK_DATA: 0x%X", i, BaseOffset);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_THUNK_DATA, u1.Function));
+
+		if (Collapsing_ImageThunkDataIdx)
+		{
+#ifdef _WIN64
+			ImGui::BulletText("[%s] Function: 0x%X", "ULONGLONG", pImageThunkDataIdx->u1.Function);
+#else
+			ImGui::BulletText("[%s] Function: 0x%X", "ULONG", pImageThunkDataIdx->u1.Function);
+#endif
+
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_THUNK_DATA, u1.Function));
+
+			ImGui::TreePop();
+		}
+	}
+}
+
+VOID Parser::Helpers::ParseDelayLoadImportDir(DWORD BaseOffset)
+{
+	const PIMAGE_DELAYLOAD_DESCRIPTOR pImageDelayLoad = reinterpret_cast<PIMAGE_DELAYLOAD_DESCRIPTOR>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	static std::vector<char*> Collapsing_ImageDelayLoadIds;
+	for (int i = 0; ; i++)
+	{
+		if (Collapsing_ImageDelayLoadIds.size() <= i)
+			Collapsing_ImageDelayLoadIds.push_back(nullptr);
+
+		const PIMAGE_DELAYLOAD_DESCRIPTOR pImageDelayLoadIdx = &pImageDelayLoad[i];
+
+		BaseOffset = (BYTE*)pImageDelayLoadIdx - (BYTE*)g_pDosHeader;
+
+		if (!pImageDelayLoadIdx->Attributes.AllAttributes)
+			break;
+
+		const char* DelayDllName = (char*)g_pDosHeader + Helpers::RVAToFileOffset(pImageDelayLoadIdx->DllNameRVA);
+		bool Collapsing_ImageDelayLoadIdx = ImGui::TreeNode(&Collapsing_ImageDelayLoadIds[i], "IMAGE_DELAYLOAD_DESCRIPTOR[%i] (%s): 0x%X", i, DelayDllName, BaseOffset);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, Attributes.AllAttributes));
+
+		if (Collapsing_ImageDelayLoadIdx)
+		{
+			ImGui::BulletText("[%s] AllAttributes: 0x%X", "DWORD", pImageDelayLoadIdx->Attributes.AllAttributes);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, Attributes.AllAttributes));
+
+			ImGui::BulletText("[%s] DllNameRVA: 0x%X", "DWORD", pImageDelayLoadIdx->DllNameRVA);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, DllNameRVA));
+
+			ImGui::BulletText("[%s] ModuleHandleRVA: 0x%X", "DWORD", pImageDelayLoadIdx->ModuleHandleRVA);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, ModuleHandleRVA));
+
+			ImGui::BulletText("[%s] ImportAddressTableRVA: 0x%X", "DWORD", pImageDelayLoadIdx->ImportAddressTableRVA);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, ImportAddressTableRVA));
+
+			ImGui::BulletText("[%s] ImportNameTableRVA: 0x%X", "DWORD", pImageDelayLoadIdx->ImportNameTableRVA);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, ImportNameTableRVA));
+
+			ImGui::BulletText("[%s] BoundImportAddressTableRVA: 0x%X", "DWORD", pImageDelayLoadIdx->BoundImportAddressTableRVA);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, BoundImportAddressTableRVA));
+
+			ImGui::BulletText("[%s] UnloadInformationTableRVA: 0x%X", "DWORD", pImageDelayLoadIdx->UnloadInformationTableRVA);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, UnloadInformationTableRVA));
+
+			ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageDelayLoadIdx->TimeDateStamp);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, TimeDateStamp));
+
+			ImGui::TreePop();
+		}
+	}
+}
+
+VOID Parser::Helpers::ParseCOMDir(DWORD BaseOffset)
+{
+	const PIMAGE_COR20_HEADER pImageCor20Header = reinterpret_cast<PIMAGE_COR20_HEADER>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	ImGui::BulletText("[%s] cb: 0x%X", "DWORD", pImageCor20Header->cb);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, cb));
+
+	ImGui::BulletText("[%s] MajorRuntimeVersion: 0x%X", "WORD", pImageCor20Header->MajorRuntimeVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MajorRuntimeVersion));
+
+	ImGui::BulletText("[%s] MinorRuntimeVersion: 0x%X", "WORD", pImageCor20Header->MinorRuntimeVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MinorRuntimeVersion));
+
+	const bool Collapsing_ImageCor20Header_MetaData = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] MetaData", "IMAGE_DATA_DIRECTORY");
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MetaData));
+
+	if (Collapsing_ImageCor20Header_MetaData)
+	{
+		ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->MetaData.VirtualAddress);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MetaData.VirtualAddress));
+
+		ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->MetaData.Size);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, MetaData.Size));
+
+		ImGui::TreePop();
+	}
+
+	ImGui::BulletText("[%s] Flags: 0x%X", "DWORD", pImageCor20Header->Flags);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, Flags));
+
+	ImGui::BulletText("[%s] %s: 0x%X", "DWORD", (pImageCor20Header->Flags & COMIMAGE_FLAGS_NATIVE_ENTRYPOINT) ? "EntryPointRVA" : "EntryPointToken", pImageCor20Header->EntryPointRVA);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, EntryPointRVA));
+
+	const bool Collapsing_ImageCor20Header_Resources = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] Resources", "IMAGE_DATA_DIRECTORY");
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, Resources));
+
+	if (Collapsing_ImageCor20Header_Resources)
+	{
+		ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->Resources.VirtualAddress);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, Resources.VirtualAddress));
+
+		ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->Resources.Size);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, Resources.Size));
+
+		ImGui::TreePop();
+	}
+
+	const bool Collapsing_ImageCor20Header_StrongNameSignature = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] StrongNameSignature", "IMAGE_DATA_DIRECTORY");
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, StrongNameSignature));
+
+	if (Collapsing_ImageCor20Header_StrongNameSignature)
+	{
+		ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->StrongNameSignature.VirtualAddress);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, StrongNameSignature.VirtualAddress));
+
+		ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->StrongNameSignature.Size);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, StrongNameSignature.Size));
+
+		ImGui::TreePop();
+	}
+
+	const bool Collapsing_ImageCor20Header_CodeManagerTable = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] CodeManagerTable", "IMAGE_DATA_DIRECTORY");
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, CodeManagerTable));
+
+	if (Collapsing_ImageCor20Header_CodeManagerTable)
+	{
+		ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->CodeManagerTable.VirtualAddress);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, CodeManagerTable.VirtualAddress));
+
+		ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->CodeManagerTable.Size);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, CodeManagerTable.Size));
+
+		ImGui::TreePop();
+	}
+
+	const bool Collapsing_ImageCor20Header_VTableFixups = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] VTableFixups", "IMAGE_DATA_DIRECTORY");
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, VTableFixups));
+
+	if (Collapsing_ImageCor20Header_VTableFixups)
+	{
+		ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->VTableFixups.VirtualAddress);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, VTableFixups.VirtualAddress));
+
+		ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->VTableFixups.Size);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, VTableFixups.Size));
+
+		ImGui::TreePop();
+	}
+
+	const bool Collapsing_ImageCor20Header_ExportAddressTableJumps = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] ExportAddressTableJumps", "IMAGE_DATA_DIRECTORY");
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ExportAddressTableJumps));
+
+	if (Collapsing_ImageCor20Header_ExportAddressTableJumps)
+	{
+		ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->ExportAddressTableJumps.VirtualAddress);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ExportAddressTableJumps.VirtualAddress));
+
+		ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->ExportAddressTableJumps.Size);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ExportAddressTableJumps.Size));
+
+		ImGui::TreePop();
+	}
+
+	const bool Collapsing_ImageCor20Header_ManagedNativeHeader = ImGui::TreeNode(static_cast<void*>(nullptr), "[%s] ManagedNativeHeader", "IMAGE_DATA_DIRECTORY");
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ManagedNativeHeader));
+
+	if (Collapsing_ImageCor20Header_ManagedNativeHeader)
+	{
+		ImGui::BulletText("[%s] VirtualAddress: 0x%X", "DWORD", pImageCor20Header->ManagedNativeHeader.VirtualAddress);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ManagedNativeHeader.VirtualAddress));
+
+		ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageCor20Header->ManagedNativeHeader.Size);
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, ManagedNativeHeader.Size));
+
+		ImGui::TreePop();
 	}
 }
 
