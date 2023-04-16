@@ -15,6 +15,11 @@ extern HWND* g_pMainWnd;
 extern std::vector<BYTE> OpenedFile;
 extern CHAR g_FileName[MAX_PATH];
 
+extern PIMAGE_DOS_HEADER g_pDosHeader;
+extern PIMAGE_NT_HEADERS g_pNtHeaders;
+extern PIMAGE_FILE_HEADER g_pFileHeader;
+extern PIMAGE_OPTIONAL_HEADER g_pOptionalHeader;
+
 namespace Parser 
 {
 	BOOLEAN OpenFile(std::vector<BYTE>& OpenedFile);
@@ -23,6 +28,9 @@ namespace Parser
 
 	namespace Helpers
 	{
+		VOID Parse(DWORD BaseOffset, WORD Id);
+		VOID ParseRsrcDir(DWORD BaseOffset);
+
 		DWORD RVAToFileOffset(DWORD RVA);
 	}
 }

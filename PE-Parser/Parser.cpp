@@ -4,6 +4,11 @@ HWND* g_pMainWnd = nullptr;
 std::vector<BYTE> g_OpenedFile(0);
 CHAR g_FileName[MAX_PATH] = {};
 
+PIMAGE_DOS_HEADER g_pDosHeader = nullptr;
+PIMAGE_NT_HEADERS g_pNtHeaders = nullptr;
+PIMAGE_FILE_HEADER g_pFileHeader = nullptr;
+PIMAGE_OPTIONAL_HEADER g_pOptionalHeader = nullptr;
+
 BOOLEAN g_bShowAbout = FALSE;
 BOOLEAN Parser::OpenFile(OUT std::vector<BYTE>& OpenedFile)
 {
@@ -50,6 +55,11 @@ BOOLEAN Parser::OpenFile(OUT std::vector<BYTE>& OpenedFile)
 		{
 			OpenedFile.clear();
 			OpenedFile = FileBytes;
+
+			g_pDosHeader = (PIMAGE_DOS_HEADER)&g_OpenedFile[0];
+			g_pNtHeaders = (PIMAGE_NT_HEADERS)((BYTE*)g_pDosHeader + g_pDosHeader->e_lfanew);
+			g_pFileHeader = &g_pNtHeaders->FileHeader;
+			g_pOptionalHeader = &g_pNtHeaders->OptionalHeader;
 
 			memset(g_FileName, 0, sizeof(g_FileName));
 
@@ -131,12 +141,7 @@ BOOLEAN Parser::Render()
 	// Parsing PE header.
 	if (g_OpenedFile.size())
 	{
-		const PIMAGE_DOS_HEADER pDosHeader				= (PIMAGE_DOS_HEADER)&g_OpenedFile[0];
-		const PIMAGE_NT_HEADERS pNtHeaders				= (PIMAGE_NT_HEADERS)((BYTE*)pDosHeader + pDosHeader->e_lfanew);
-		const PIMAGE_FILE_HEADER pFileHeader			= &pNtHeaders->FileHeader;
-		const PIMAGE_OPTIONAL_HEADER pOptionalHeader	= &pNtHeaders->OptionalHeader;
-
-		ImGui::TextWrapped("[File Path]\n%s (%s-bit)", g_FileName, pOptionalHeader->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC ? "64" : "32");
+		ImGui::TextWrapped("[File Path]\n%s (%s-bit)", g_FileName, g_pOptionalHeader->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC ? "64" : "32");
 
 		ImGui::Spacing();
 		ImGui::Separator();
@@ -154,59 +159,59 @@ BOOLEAN Parser::Render()
 
 		if (Collapsing_ImageDosHeader)
 		{
-			ImGui::BulletText("[%s] e_magic: 0x%X", "WORD", pDosHeader->e_magic);
+			ImGui::BulletText("[%s] e_magic: 0x%X", "WORD", g_pDosHeader->e_magic);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_magic));
 
-			ImGui::BulletText("[%s] e_cblp: 0x%X", "WORD", pDosHeader->e_cblp);
+			ImGui::BulletText("[%s] e_cblp: 0x%X", "WORD", g_pDosHeader->e_cblp);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_cblp));
 
-			ImGui::BulletText("[%s] e_cp: 0x%X", "WORD", pDosHeader->e_cp);
+			ImGui::BulletText("[%s] e_cp: 0x%X", "WORD", g_pDosHeader->e_cp);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_cp));
 
-			ImGui::BulletText("[%s] e_crlc: 0x%X", "WORD", pDosHeader->e_crlc);
+			ImGui::BulletText("[%s] e_crlc: 0x%X", "WORD", g_pDosHeader->e_crlc);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_crlc));
 
-			ImGui::BulletText("[%s] e_cparhdr: 0x%X", "WORD", pDosHeader->e_cparhdr);
+			ImGui::BulletText("[%s] e_cparhdr: 0x%X", "WORD", g_pDosHeader->e_cparhdr);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_cparhdr));
 
-			ImGui::BulletText("[%s] e_minalloc: 0x%X", "WORD", pDosHeader->e_minalloc);
+			ImGui::BulletText("[%s] e_minalloc: 0x%X", "WORD", g_pDosHeader->e_minalloc);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_minalloc));
 
-			ImGui::BulletText("[%s] e_maxalloc: 0x%X", "WORD", pDosHeader->e_maxalloc);
+			ImGui::BulletText("[%s] e_maxalloc: 0x%X", "WORD", g_pDosHeader->e_maxalloc);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_maxalloc));
 
-			ImGui::BulletText("[%s] e_ss: 0x%X", "WORD", pDosHeader->e_ss);
+			ImGui::BulletText("[%s] e_ss: 0x%X", "WORD", g_pDosHeader->e_ss);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_ss));
 
-			ImGui::BulletText("[%s] e_sp: 0x%X", "WORD", pDosHeader->e_sp);
+			ImGui::BulletText("[%s] e_sp: 0x%X", "WORD", g_pDosHeader->e_sp);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_sp));
 
-			ImGui::BulletText("[%s] e_csum: 0x%X", "WORD", pDosHeader->e_csum);
+			ImGui::BulletText("[%s] e_csum: 0x%X", "WORD", g_pDosHeader->e_csum);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_csum));
 
-			ImGui::BulletText("[%s] e_ip: 0x%X", "WORD", pDosHeader->e_ip);
+			ImGui::BulletText("[%s] e_ip: 0x%X", "WORD", g_pDosHeader->e_ip);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_ip));
 
-			ImGui::BulletText("[%s] e_cs: 0x%X", "WORD", pDosHeader->e_cs);
+			ImGui::BulletText("[%s] e_cs: 0x%X", "WORD", g_pDosHeader->e_cs);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_cs));
 
-			ImGui::BulletText("[%s] e_lfarlc: 0x%X", "WORD", pDosHeader->e_lfarlc);
+			ImGui::BulletText("[%s] e_lfarlc: 0x%X", "WORD", g_pDosHeader->e_lfarlc);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_lfarlc));
 
-			ImGui::BulletText("[%s] e_ovno: 0x%X", "WORD", pDosHeader->e_ovno);
+			ImGui::BulletText("[%s] e_ovno: 0x%X", "WORD", g_pDosHeader->e_ovno);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_ovno));
 
@@ -216,20 +221,20 @@ BOOLEAN Parser::Render()
 
 			if (Collapsing_ImageDosHeader_eres)
 			{
-				for (int i = 0; i < ARRAYSIZE(pDosHeader->e_res); i++)
+				for (int i = 0; i < ARRAYSIZE(g_pDosHeader->e_res); i++)
 				{
-					ImGui::BulletText("[%s] e_res[%i]: 0x%X", "WORD", i, pDosHeader->e_res[i]);
+					ImGui::BulletText("[%s] e_res[%i]: 0x%X", "WORD", i, g_pDosHeader->e_res[i]);
 					if (PRSR_TOOLTIP)
 						ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_res[i]));
 				}
 				ImGui::TreePop();
 			}
 			
-			ImGui::BulletText("[%s] e_oemid: 0x%X", "WORD", pDosHeader->e_oemid);
+			ImGui::BulletText("[%s] e_oemid: 0x%X", "WORD", g_pDosHeader->e_oemid);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_oemid));
 
-			ImGui::BulletText("[%s] e_oeminfo: 0x%X", "WORD", pDosHeader->e_oeminfo);
+			ImGui::BulletText("[%s] e_oeminfo: 0x%X", "WORD", g_pDosHeader->e_oeminfo);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_oeminfo));
 
@@ -239,16 +244,16 @@ BOOLEAN Parser::Render()
 
 			if (Collapsing_ImageDosHeader_eres2)
 			{
-				for (int i = 0; i < ARRAYSIZE(pDosHeader->e_res2); i++)
+				for (int i = 0; i < ARRAYSIZE(g_pDosHeader->e_res2); i++)
 				{
-					ImGui::BulletText("[%s] e_res2[%i]: 0x%X", "WORD", i, pDosHeader->e_res2[i]);
+					ImGui::BulletText("[%s] e_res2[%i]: 0x%X", "WORD", i, g_pDosHeader->e_res2[i]);
 					if (PRSR_TOOLTIP)
 						ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_res2[i]));
 				}
 				ImGui::TreePop();
 			}
 
-			ImGui::BulletText("[%s] e_lfanew: 0x%X", "LONG", pDosHeader->e_lfanew);
+			ImGui::BulletText("[%s] e_lfanew: 0x%X", "LONG", g_pDosHeader->e_lfanew);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", offsetof(IMAGE_DOS_HEADER, e_lfanew));
 
@@ -256,7 +261,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// BaseOffset representing the File Offset of a structure.
-		DWORD BaseOffset = (BYTE*)pNtHeaders - (BYTE*)pDosHeader;
+		DWORD BaseOffset = (BYTE*)g_pNtHeaders - (BYTE*)g_pDosHeader;
 
 		// Parsing the nt header.
 		bool Collapsing_ImageNtHeaders = ImGui::TreeNode("IMAGE_NT_HEADERS");
@@ -265,22 +270,22 @@ BOOLEAN Parser::Render()
 
 		if (Collapsing_ImageNtHeaders)
 		{
-			ImGui::BulletText("[%s] Signature: 0x%X", "DWORD", pNtHeaders->Signature);
+			ImGui::BulletText("[%s] Signature: 0x%X", "DWORD", g_pNtHeaders->Signature);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_NT_HEADERS, Signature));
 
-			ImGui::BulletText("[%s] FileHeader: 0x%X", "IMAGE_FILE_HEADER", &pNtHeaders->FileHeader);
+			ImGui::BulletText("[%s] FileHeader: 0x%X", "IMAGE_FILE_HEADER", &g_pNtHeaders->FileHeader);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_NT_HEADERS, FileHeader));
 
-			ImGui::BulletText("[%s] OptionalHeader: 0x%X", "IMAGE_OPTIONAL_HEADER", &pNtHeaders->OptionalHeader);
+			ImGui::BulletText("[%s] OptionalHeader: 0x%X", "IMAGE_OPTIONAL_HEADER", &g_pNtHeaders->OptionalHeader);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_NT_HEADERS, OptionalHeader));
 
 			ImGui::TreePop();
 		}
 
-		BaseOffset = (BYTE*)pFileHeader - (BYTE*)pDosHeader;
+		BaseOffset = (BYTE*)g_pFileHeader - (BYTE*)g_pDosHeader;
 
 		// Parsing the file header.
 		bool Collapsing_ImageFileHeader = ImGui::TreeNode("IMAGE_FILE_HEADER");
@@ -289,38 +294,38 @@ BOOLEAN Parser::Render()
 
 		if (Collapsing_ImageFileHeader)
 		{
-			ImGui::BulletText("[%s] Machine: 0x%X", "WORD", pFileHeader->Machine);
+			ImGui::BulletText("[%s] Machine: 0x%X", "WORD", g_pFileHeader->Machine);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_FILE_HEADER, Machine));
 
-			ImGui::BulletText("[%s] NumberOfSections: 0x%X", "WORD", pFileHeader->NumberOfSections);
+			ImGui::BulletText("[%s] NumberOfSections: 0x%X", "WORD", g_pFileHeader->NumberOfSections);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_FILE_HEADER, NumberOfSections));
 
-			ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pFileHeader->TimeDateStamp);
+			ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", g_pFileHeader->TimeDateStamp);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_FILE_HEADER, TimeDateStamp));
 
-			ImGui::BulletText("[%s] PointerToSymbolTable: 0x%X", "DWORD", pFileHeader->PointerToSymbolTable);
+			ImGui::BulletText("[%s] PointerToSymbolTable: 0x%X", "DWORD", g_pFileHeader->PointerToSymbolTable);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_FILE_HEADER, PointerToSymbolTable));
 
-			ImGui::BulletText("[%s] NumberOfSymbols: 0x%X", "DWORD", pFileHeader->NumberOfSymbols);
+			ImGui::BulletText("[%s] NumberOfSymbols: 0x%X", "DWORD", g_pFileHeader->NumberOfSymbols);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_FILE_HEADER, NumberOfSymbols));
 
-			ImGui::BulletText("[%s] SizeOfOptionalHeader: 0x%X", "WORD", pFileHeader->SizeOfOptionalHeader);
+			ImGui::BulletText("[%s] SizeOfOptionalHeader: 0x%X", "WORD", g_pFileHeader->SizeOfOptionalHeader);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_FILE_HEADER, SizeOfOptionalHeader));
 
-			ImGui::BulletText("[%s] Characteristics: 0x%X", "WORD", pFileHeader->Characteristics);
+			ImGui::BulletText("[%s] Characteristics: 0x%X", "WORD", g_pFileHeader->Characteristics);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_FILE_HEADER, Characteristics));
 
 			ImGui::TreePop();
 		}
 
-		BaseOffset = (BYTE*)pOptionalHeader - (BYTE*)pDosHeader;
+		BaseOffset = (BYTE*)g_pOptionalHeader - (BYTE*)g_pDosHeader;
 
 		// Parsing the optional header.
 		bool Collapsing_ImageOptionalHeader = ImGui::TreeNode("IMAGE_OPTIONAL_HEADER");
@@ -329,139 +334,139 @@ BOOLEAN Parser::Render()
 
 		if (Collapsing_ImageOptionalHeader)
 		{
-			ImGui::BulletText("[%s] Magic: 0x%X", "WORD", pOptionalHeader->Magic);
+			ImGui::BulletText("[%s] Magic: 0x%X", "WORD", g_pOptionalHeader->Magic);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, Magic));
 
-			ImGui::BulletText("[%s] MajorLinkerVersion: 0x%X", "BYTE", pOptionalHeader->MajorLinkerVersion);
+			ImGui::BulletText("[%s] MajorLinkerVersion: 0x%X", "BYTE", g_pOptionalHeader->MajorLinkerVersion);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, MajorLinkerVersion));
 
-			ImGui::BulletText("[%s] MinorLinkerVersion: 0x%X", "BYTE", pOptionalHeader->MinorLinkerVersion);
+			ImGui::BulletText("[%s] MinorLinkerVersion: 0x%X", "BYTE", g_pOptionalHeader->MinorLinkerVersion);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, MinorLinkerVersion));
 
-			ImGui::BulletText("[%s] SizeOfCode: 0x%X", "DWORD", pOptionalHeader->SizeOfCode);
+			ImGui::BulletText("[%s] SizeOfCode: 0x%X", "DWORD", g_pOptionalHeader->SizeOfCode);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SizeOfCode));
 
-			ImGui::BulletText("[%s] SizeOfInitializedData: 0x%X", "DWORD", pOptionalHeader->SizeOfInitializedData);
+			ImGui::BulletText("[%s] SizeOfInitializedData: 0x%X", "DWORD", g_pOptionalHeader->SizeOfInitializedData);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SizeOfInitializedData));
 
-			ImGui::BulletText("[%s] SizeOfUninitializedData: 0x%X", "DWORD", pOptionalHeader->SizeOfUninitializedData);
+			ImGui::BulletText("[%s] SizeOfUninitializedData: 0x%X", "DWORD", g_pOptionalHeader->SizeOfUninitializedData);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SizeOfUninitializedData));
 
-			ImGui::BulletText("[%s] AddressOfEntryPoint: 0x%X", "DWORD", pOptionalHeader->AddressOfEntryPoint);
+			ImGui::BulletText("[%s] AddressOfEntryPoint: 0x%X", "DWORD", g_pOptionalHeader->AddressOfEntryPoint);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, AddressOfEntryPoint));
 
-			ImGui::BulletText("[%s] BaseOfCode: 0x%X", "DWORD", pOptionalHeader->BaseOfCode);
+			ImGui::BulletText("[%s] BaseOfCode: 0x%X", "DWORD", g_pOptionalHeader->BaseOfCode);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, BaseOfCode));
 
 #ifdef _WIN64
-			ImGui::BulletText("[%s] ImageBase: 0x%X", "ULONGLONG", pOptionalHeader->ImageBase);
+			ImGui::BulletText("[%s] ImageBase: 0x%X", "ULONGLONG", g_pOptionalHeader->ImageBase);
 #else
-			ImGui::BulletText("[%s] ImageBase: 0x%X", "ULONG", pOptionalHeader->ImageBase);
+			ImGui::BulletText("[%s] ImageBase: 0x%X", "ULONG", g_pOptionalHeader->ImageBase);
 #endif
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, ImageBase));
 
-			ImGui::BulletText("[%s] SectionAlignment: 0x%X", "DWORD", pOptionalHeader->SectionAlignment);
+			ImGui::BulletText("[%s] SectionAlignment: 0x%X", "DWORD", g_pOptionalHeader->SectionAlignment);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SectionAlignment));
 
-			ImGui::BulletText("[%s] FileAlignment: 0x%X", "DWORD", pOptionalHeader->FileAlignment);
+			ImGui::BulletText("[%s] FileAlignment: 0x%X", "DWORD", g_pOptionalHeader->FileAlignment);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, FileAlignment));
 
-			ImGui::BulletText("[%s] MajorOperatingSystemVersion: 0x%X", "WORD", pOptionalHeader->MajorOperatingSystemVersion);
+			ImGui::BulletText("[%s] MajorOperatingSystemVersion: 0x%X", "WORD", g_pOptionalHeader->MajorOperatingSystemVersion);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, MajorOperatingSystemVersion));
 
-			ImGui::BulletText("[%s] MinorOperatingSystemVersion: 0x%X", "WORD", pOptionalHeader->MinorOperatingSystemVersion);
+			ImGui::BulletText("[%s] MinorOperatingSystemVersion: 0x%X", "WORD", g_pOptionalHeader->MinorOperatingSystemVersion);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, MinorOperatingSystemVersion));
 
-			ImGui::BulletText("[%s] MajorImageVersion: 0x%X", "WORD", pOptionalHeader->MajorImageVersion);
+			ImGui::BulletText("[%s] MajorImageVersion: 0x%X", "WORD", g_pOptionalHeader->MajorImageVersion);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, MajorImageVersion));
 
-			ImGui::BulletText("[%s] MinorImageVersion: 0x%X", "WORD", pOptionalHeader->MinorImageVersion);
+			ImGui::BulletText("[%s] MinorImageVersion: 0x%X", "WORD", g_pOptionalHeader->MinorImageVersion);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, MinorImageVersion));
 
-			ImGui::BulletText("[%s] MajorSubsystemVersion: 0x%X", "WORD", pOptionalHeader->MajorSubsystemVersion);
+			ImGui::BulletText("[%s] MajorSubsystemVersion: 0x%X", "WORD", g_pOptionalHeader->MajorSubsystemVersion);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, MajorSubsystemVersion));
 
-			ImGui::BulletText("[%s] MinorSubsystemVersion: 0x%X", "WORD", pOptionalHeader->MinorSubsystemVersion);
+			ImGui::BulletText("[%s] MinorSubsystemVersion: 0x%X", "WORD", g_pOptionalHeader->MinorSubsystemVersion);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, MinorSubsystemVersion));
 
-			ImGui::BulletText("[%s] Win32VersionValue: 0x%X", "DWORD", pOptionalHeader->Win32VersionValue);
+			ImGui::BulletText("[%s] Win32VersionValue: 0x%X", "DWORD", g_pOptionalHeader->Win32VersionValue);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, Win32VersionValue));
 
-			ImGui::BulletText("[%s] SizeOfImage: 0x%X", "DWORD", pOptionalHeader->SizeOfImage);
+			ImGui::BulletText("[%s] SizeOfImage: 0x%X", "DWORD", g_pOptionalHeader->SizeOfImage);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SizeOfImage));
 
-			ImGui::BulletText("[%s] SizeOfHeaders: 0x%X", "DWORD", pOptionalHeader->SizeOfHeaders);
+			ImGui::BulletText("[%s] SizeOfHeaders: 0x%X", "DWORD", g_pOptionalHeader->SizeOfHeaders);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SizeOfHeaders));
 
-			ImGui::BulletText("[%s] CheckSum: 0x%X", "DWORD", pOptionalHeader->CheckSum);
+			ImGui::BulletText("[%s] CheckSum: 0x%X", "DWORD", g_pOptionalHeader->CheckSum);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, CheckSum));
 
-			ImGui::BulletText("[%s] Subsystem: 0x%X", "WORD", pOptionalHeader->Subsystem);
+			ImGui::BulletText("[%s] Subsystem: 0x%X", "WORD", g_pOptionalHeader->Subsystem);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, Subsystem));
 
-			ImGui::BulletText("[%s] DllCharacteristics: 0x%X", "WORD", pOptionalHeader->DllCharacteristics);
+			ImGui::BulletText("[%s] DllCharacteristics: 0x%X", "WORD", g_pOptionalHeader->DllCharacteristics);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, DllCharacteristics));
 
 #ifdef _WIN64
-			ImGui::BulletText("[%s] SizeOfStackReserve: 0x%X", "ULONGLONG", pOptionalHeader->SizeOfStackReserve);
+			ImGui::BulletText("[%s] SizeOfStackReserve: 0x%X", "ULONGLONG", g_pOptionalHeader->SizeOfStackReserve);
 #else
-			ImGui::BulletText("[%s] SizeOfStackReserve: 0x%X", "ULONG", pOptionalHeader->SizeOfStackReserve);
+			ImGui::BulletText("[%s] SizeOfStackReserve: 0x%X", "ULONG", g_pOptionalHeader->SizeOfStackReserve);
 #endif
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SizeOfStackReserve));
 
 #ifdef _WIN64
-			ImGui::BulletText("[%s] SizeOfStackCommit: 0x%X", "ULONGLONG", pOptionalHeader->SizeOfStackCommit);
+			ImGui::BulletText("[%s] SizeOfStackCommit: 0x%X", "ULONGLONG", g_pOptionalHeader->SizeOfStackCommit);
 #else
-			ImGui::BulletText("[%s] SizeOfStackCommit: 0x%X", "ULONG", pOptionalHeader->SizeOfStackCommit);
+			ImGui::BulletText("[%s] SizeOfStackCommit: 0x%X", "ULONG", g_pOptionalHeader->SizeOfStackCommit);
 #endif
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SizeOfStackCommit));
 
 #ifdef _WIN64
-			ImGui::BulletText("[%s] SizeOfHeapReserve: 0x%X", "ULONGLONG", pOptionalHeader->SizeOfHeapReserve);
+			ImGui::BulletText("[%s] SizeOfHeapReserve: 0x%X", "ULONGLONG", g_pOptionalHeader->SizeOfHeapReserve);
 #else
-			ImGui::BulletText("[%s] SizeOfHeapReserve: 0x%X", "ULONG", pOptionalHeader->SizeOfHeapReserve);
+			ImGui::BulletText("[%s] SizeOfHeapReserve: 0x%X", "ULONG", g_pOptionalHeader->SizeOfHeapReserve);
 #endif
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SizeOfHeapReserve));
 
 #ifdef _WIN64
-			ImGui::BulletText("[%s] SizeOfHeapCommit: 0x%X", "ULONGLONG", pOptionalHeader->SizeOfHeapCommit);
+			ImGui::BulletText("[%s] SizeOfHeapCommit: 0x%X", "ULONGLONG", g_pOptionalHeader->SizeOfHeapCommit);
 #else
-			ImGui::BulletText("[%s] SizeOfHeapCommit: 0x%X", "ULONG", pOptionalHeader->SizeOfHeapCommit);
+			ImGui::BulletText("[%s] SizeOfHeapCommit: 0x%X", "ULONG", g_pOptionalHeader->SizeOfHeapCommit);
 #endif
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, SizeOfHeapCommit));
 
-			ImGui::BulletText("[%s] LoaderFlags: 0x%X", "DWORD", pOptionalHeader->LoaderFlags);
+			ImGui::BulletText("[%s] LoaderFlags: 0x%X", "DWORD", g_pOptionalHeader->LoaderFlags);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, LoaderFlags));
 
-			ImGui::BulletText("[%s] NumberOfRvaAndSizes: 0x%X", "DWORD", pOptionalHeader->NumberOfRvaAndSizes);
+			ImGui::BulletText("[%s] NumberOfRvaAndSizes: 0x%X", "DWORD", g_pOptionalHeader->NumberOfRvaAndSizes);
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, NumberOfRvaAndSizes));
 
@@ -473,11 +478,11 @@ BOOLEAN Parser::Render()
 			{
 				// Parsing the optional header's data directories. Actual implementations made elsewhere.
 				static std::vector<char*> Collapsing_ImageOptionalHeader_DataDirectoryIds(16);
-				for (int i = 0; i < ARRAYSIZE(pOptionalHeader->DataDirectory); i++)
+				for (int i = 0; i < ARRAYSIZE(g_pOptionalHeader->DataDirectory); i++)
 				{
-					PIMAGE_DATA_DIRECTORY pDataDirectoryIdx = &pOptionalHeader->DataDirectory[i];
+					PIMAGE_DATA_DIRECTORY pDataDirectoryIdx = &g_pOptionalHeader->DataDirectory[i];
 
-					BaseOffset = (BYTE*)pDataDirectoryIdx - (BYTE*)pDosHeader;
+					BaseOffset = (BYTE*)pDataDirectoryIdx - (BYTE*)g_pDosHeader;
 
 					bool Collapsing_ImageOptionalHeader_DataDirectoryIdx = ImGui::TreeNode(&Collapsing_ImageOptionalHeader_DataDirectoryIds[i], "[%s] DataDirectory[%i]: 0x%X", "IMAGE_DATA_DIRECTORY", i, pDataDirectoryIdx);
 					if (PRSR_TOOLTIP)
@@ -504,13 +509,13 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing all sections.
-		static std::vector<char*> Collapsing_ImageSectionHeaderIds(pFileHeader->NumberOfSections);
-		Collapsing_ImageSectionHeaderIds.resize(pFileHeader->NumberOfSections);
-		for (int i = 0; i < pFileHeader->NumberOfSections; i++)
+		static std::vector<char*> Collapsing_ImageSectionHeaderIds(g_pFileHeader->NumberOfSections);
+		Collapsing_ImageSectionHeaderIds.resize(g_pFileHeader->NumberOfSections);
+		for (int i = 0; i < g_pFileHeader->NumberOfSections; i++)
 		{
-			const PIMAGE_SECTION_HEADER pIdxSection = &IMAGE_FIRST_SECTION(pNtHeaders)[i];
+			const PIMAGE_SECTION_HEADER pIdxSection = &IMAGE_FIRST_SECTION(g_pNtHeaders)[i];
 
-			BaseOffset = (BYTE*)pIdxSection - (BYTE*)pDosHeader;
+			BaseOffset = (BYTE*)pIdxSection - (BYTE*)g_pDosHeader;
 
 			// Section names aren't guaranteed to be null-terminated (\0) so we guarantee it.
 			std::string SectionName = (char*)pIdxSection->Name;
@@ -680,7 +685,7 @@ BOOLEAN Parser::Render()
 		ImGui::Spacing();
 
 		// Parsing the export directory.
-		const PIMAGE_DATA_DIRECTORY pExportDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+		const PIMAGE_DATA_DIRECTORY pExportDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
 		BaseOffset = Helpers::RVAToFileOffset(pExportDir->VirtualAddress);
 
 		const bool Collapsing_ImageExportDir = ImGui::TreeNode("IMAGE_EXPORT_DIRECTORY");
@@ -691,7 +696,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_EXPORT_DIRECTORY pImageExportDir = reinterpret_cast<PIMAGE_EXPORT_DIRECTORY>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_EXPORT_DIRECTORY pImageExportDir = reinterpret_cast<PIMAGE_EXPORT_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
 
 				ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageExportDir->Characteristics);
 				if (PRSR_TOOLTIP)
@@ -744,7 +749,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing the import directory.
-		const PIMAGE_DATA_DIRECTORY pImportDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+		const PIMAGE_DATA_DIRECTORY pImportDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
 		BaseOffset = Helpers::RVAToFileOffset(pImportDir->VirtualAddress);
 
 		const bool Collapsing_ImageImportDescr = ImGui::TreeNode("IMAGE_IMPORT_DESCRIPTOR");
@@ -755,7 +760,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_IMPORT_DESCRIPTOR pImageImportDescr = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_IMPORT_DESCRIPTOR pImageImportDescr = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>((UINT_PTR)g_pDosHeader + BaseOffset);
 
 				static std::vector<char*> Collapsing_ImageImportDescrIds;
 				for (int i = 0; ; i++)
@@ -765,12 +770,12 @@ BOOLEAN Parser::Render()
 
 					PIMAGE_IMPORT_DESCRIPTOR pImageImportDescrIdx = &pImageImportDescr[i];
 
-					BaseOffset = (BYTE*)pImageImportDescrIdx - (BYTE*)pDosHeader;
+					BaseOffset = (BYTE*)pImageImportDescrIdx - (BYTE*)g_pDosHeader;
 
 					if (!pImageImportDescrIdx->Characteristics)
 						break;
 
-					const char* pImportName = reinterpret_cast<const char*>((BYTE*)pDosHeader + pImageImportDescrIdx->Name);
+					const char* pImportName = reinterpret_cast<const char*>((BYTE*)g_pDosHeader + pImageImportDescrIdx->Name);
 					bool Collapsing_ImageImportDescrIdx = ImGui::TreeNode(&Collapsing_ImageImportDescrIds[i], "[%i] %s: 0x%X", i, pImportName, BaseOffset);
 					if (PRSR_TOOLTIP)
 						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, Characteristics));
@@ -808,7 +813,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing the resource directory.
-		const PIMAGE_DATA_DIRECTORY pResourceDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE];
+		const PIMAGE_DATA_DIRECTORY pResourceDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE];
 		BaseOffset = Helpers::RVAToFileOffset(pResourceDir->VirtualAddress);
 
 		const bool Collapsing_ImageRsrcDir = ImGui::TreeNode("IMAGE_RESOURCE_DIRECTORY");
@@ -819,33 +824,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_RESOURCE_DIRECTORY pImageRsrcDir = reinterpret_cast<PIMAGE_RESOURCE_DIRECTORY>((UINT_PTR)pDosHeader + BaseOffset);
-
-				ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageRsrcDir->Characteristics);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, Characteristics));
-
-				ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageRsrcDir->TimeDateStamp);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, TimeDateStamp));
-
-				ImGui::BulletText("[%s] MajorVersion: 0x%X", "WORD", pImageRsrcDir->MajorVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, MajorVersion));
-
-				ImGui::BulletText("[%s] MinorVersion: 0x%X", "WORD", pImageRsrcDir->MinorVersion);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, MinorVersion));
-
-				ImGui::BulletText("[%s] NumberOfNamedEntries: 0x%X", "WORD", pImageRsrcDir->NumberOfNamedEntries);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, NumberOfNamedEntries));
-
-				ImGui::BulletText("[%s] NumberOfIdEntries: 0x%X", "WORD", pImageRsrcDir->NumberOfIdEntries);
-				if (PRSR_TOOLTIP)
-					ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, NumberOfIdEntries));
-
-				// TO DO: This structure is followed by variadic number of IMAGE_RESOURCE_DIRECTORY_ENTRY structures. Implement them.
+				Helpers::Parse(BaseOffset, IMAGE_DIRECTORY_ENTRY_RESOURCE);
 			}
 			else
 				ImGui::Text("This executable doesn't have resources.");
@@ -854,7 +833,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing the exception directory.
-		const PIMAGE_DATA_DIRECTORY pExceptionDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
+		const PIMAGE_DATA_DIRECTORY pExceptionDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
 		BaseOffset = Helpers::RVAToFileOffset(pExceptionDir->VirtualAddress);
 
 		const bool Collapsing_ExceptionDir = ImGui::TreeNode("IMAGE_RUNTIME_FUNCTION_ENTRY");
@@ -865,7 +844,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_RUNTIME_FUNCTION_ENTRY pRuntimeFunctions = reinterpret_cast<PIMAGE_RUNTIME_FUNCTION_ENTRY>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_RUNTIME_FUNCTION_ENTRY pRuntimeFunctions = reinterpret_cast<PIMAGE_RUNTIME_FUNCTION_ENTRY>((UINT_PTR)g_pDosHeader + BaseOffset);
 				const DWORD NumberOfRuntimeFunctions = pExceptionDir->Size / sizeof(IMAGE_RUNTIME_FUNCTION_ENTRY);
 
 				static std::vector<char*> Collapsing_ImageImportDescrIds(NumberOfRuntimeFunctions);
@@ -875,7 +854,7 @@ BOOLEAN Parser::Render()
 				{
 					PIMAGE_RUNTIME_FUNCTION_ENTRY pRuntimeFunctionIdx = &pRuntimeFunctions[i];
 
-					BaseOffset = (BYTE*)pRuntimeFunctionIdx - (BYTE*)pDosHeader;
+					BaseOffset = (BYTE*)pRuntimeFunctionIdx - (BYTE*)g_pDosHeader;
 
 					bool Collapsing_RuntimeFunctionIdx = ImGui::TreeNode(&Collapsing_ImageImportDescrIds[i], "IMAGE_RUNTIME_FUNCTION_ENTRY[%i]: 0x%X", i, BaseOffset);
 					if (PRSR_TOOLTIP)
@@ -906,7 +885,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing the security directory.
-		const PIMAGE_DATA_DIRECTORY pSecurityDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY];
+		const PIMAGE_DATA_DIRECTORY pSecurityDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY];
 		BaseOffset = Helpers::RVAToFileOffset(pSecurityDir->VirtualAddress);
 
 		const bool Collapsing_SecurityDir = ImGui::TreeNode("WIN_CERTIFICATE");
@@ -917,7 +896,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const LPWIN_CERTIFICATE pWinCertificate = reinterpret_cast<LPWIN_CERTIFICATE>((UINT_PTR)pDosHeader + BaseOffset);
+				const LPWIN_CERTIFICATE pWinCertificate = reinterpret_cast<LPWIN_CERTIFICATE>((UINT_PTR)g_pDosHeader + BaseOffset);
 
 				ImGui::BulletText("[%s] dwLength: 0x%X", "DWORD", pWinCertificate->dwLength);
 				if (PRSR_TOOLTIP)
@@ -942,7 +921,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing the base relocation directory.
-		const PIMAGE_DATA_DIRECTORY pRelocDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+		const PIMAGE_DATA_DIRECTORY pRelocDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
 		BaseOffset = Helpers::RVAToFileOffset(pRelocDir->VirtualAddress);
 
 		const bool Collapsing_BaseRelocDir = ImGui::TreeNode("IMAGE_BASE_RELOCATION");
@@ -953,7 +932,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_BASE_RELOCATION pImageBaseReloc = reinterpret_cast<PIMAGE_BASE_RELOCATION>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_BASE_RELOCATION pImageBaseReloc = reinterpret_cast<PIMAGE_BASE_RELOCATION>((UINT_PTR)g_pDosHeader + BaseOffset);
 				const DWORD NumberOfRelocs = pRelocDir->Size / sizeof(IMAGE_BASE_RELOCATION);
 
 				static std::vector<char*> Collapsing_ImageBaseRelocIds(NumberOfRelocs);
@@ -964,7 +943,7 @@ BOOLEAN Parser::Render()
 				{
 					const DWORD NumberOfRelocEntries = (pImageBaseReloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
 
-					BaseOffset = (BYTE*)pImageBaseRelocIdx - (BYTE*)pDosHeader;
+					BaseOffset = (BYTE*)pImageBaseRelocIdx - (BYTE*)g_pDosHeader;
 
 					bool Collapsing_ImageBaseRelocIdx = ImGui::TreeNode(&Collapsing_ImageBaseRelocIds[i], "[%i] IMAGE_BASE_RELOCATION: 0x%X", i, BaseOffset);
 					if (PRSR_TOOLTIP)
@@ -987,7 +966,7 @@ BOOLEAN Parser::Render()
 						{
 							const PWORD RelocEntry = &reinterpret_cast<PWORD>(pImageBaseRelocIdx + 1)[i2];
 
-							BaseOffset = (BYTE*)RelocEntry - (BYTE*)pDosHeader;
+							BaseOffset = (BYTE*)RelocEntry - (BYTE*)g_pDosHeader;
 
 							ImGui::Text("[%i] Type: 0x%X |", i2, (*RelocEntry >> 12));
 							if (PRSR_TOOLTIP)
@@ -1015,7 +994,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing the debug directory.
-		const PIMAGE_DATA_DIRECTORY pDebugDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG];
+		const PIMAGE_DATA_DIRECTORY pDebugDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG];
 		BaseOffset = Helpers::RVAToFileOffset(pDebugDir->VirtualAddress);
 
 		const bool Collapsing_DebugDir = ImGui::TreeNode("IMAGE_DEBUG_DIRECTORY");
@@ -1026,7 +1005,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_DEBUG_DIRECTORY pImageDebugDir = reinterpret_cast<PIMAGE_DEBUG_DIRECTORY>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_DEBUG_DIRECTORY pImageDebugDir = reinterpret_cast<PIMAGE_DEBUG_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
 
 				ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageDebugDir->Characteristics);
 				if (PRSR_TOOLTIP)
@@ -1064,7 +1043,7 @@ BOOLEAN Parser::Render()
 
 				BaseOffset = pImageDebugDir->PointerToRawData;
 
-				static const PDWORD pCvInfo = reinterpret_cast<PDWORD>((UINT_PTR)pDosHeader + BaseOffset);
+				static const PDWORD pCvInfo = reinterpret_cast<PDWORD>((UINT_PTR)g_pDosHeader + BaseOffset);
 				switch (*pCvInfo)
 				{
 				case CV_SIGNATURE_NB10:
@@ -1124,7 +1103,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing the architecture-specific directory.
-		const PIMAGE_DATA_DIRECTORY pArchDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_ARCHITECTURE];
+		const PIMAGE_DATA_DIRECTORY pArchDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_ARCHITECTURE];
 		BaseOffset = Helpers::RVAToFileOffset(pArchDir->VirtualAddress);
 
 		const bool Collapsing_ArchDir = ImGui::TreeNode("ARCH DIRECTORY??");
@@ -1144,7 +1123,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing the global-ptr directory.
-		const PIMAGE_DATA_DIRECTORY pGlobalPtrDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_GLOBALPTR];
+		const PIMAGE_DATA_DIRECTORY pGlobalPtrDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_GLOBALPTR];
 		BaseOffset = Helpers::RVAToFileOffset(pGlobalPtrDir->VirtualAddress);
 
 		const bool Collapsing_GlobalPtrDir = ImGui::TreeNode("GLOBAL PTR??");
@@ -1164,7 +1143,7 @@ BOOLEAN Parser::Render()
 		}
 
 		// Parsing the thread local storage directory.
-		const PIMAGE_DATA_DIRECTORY pTlsDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS];
+		const PIMAGE_DATA_DIRECTORY pTlsDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS];
 		BaseOffset = Helpers::RVAToFileOffset(pTlsDir->VirtualAddress);
 
 		const bool Collapsing_TlsDir = ImGui::TreeNode("IMAGE_TLS_DIRECTORY");
@@ -1175,7 +1154,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_TLS_DIRECTORY pImageTlsDir = reinterpret_cast<PIMAGE_TLS_DIRECTORY>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_TLS_DIRECTORY pImageTlsDir = reinterpret_cast<PIMAGE_TLS_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
 				
 				// The absolute virtual addresses aren't converted, it's as they are in here.
 #ifdef _WIN64
@@ -1220,18 +1199,18 @@ BOOLEAN Parser::Render()
 
 				ImGui::Spacing();
 
-				// pImageTlsDir->AddressOfCallBacks is an absolute virtual address (based on pOptionalHeader->ImageBase), so we are subtracting pOptionalHeader->ImageBase from it to get
+				// pImageTlsDir->AddressOfCallBacks is an absolute virtual address (based on g_pOptionalHeader->ImageBase), so we are subtracting g_pOptionalHeader->ImageBase from it to get
 				// the virtual address, then convert that to file offset so we can use it.
-				const DWORD TlsCallbacksOffset = Helpers::RVAToFileOffset(pImageTlsDir->AddressOfCallBacks - pOptionalHeader->ImageBase);
+				const DWORD TlsCallbacksOffset = Helpers::RVAToFileOffset(pImageTlsDir->AddressOfCallBacks - g_pOptionalHeader->ImageBase);
 
 				for (int i = 0; ; i++)
 				{
-					PIMAGE_TLS_CALLBACK pTlsCallbackIdx = reinterpret_cast<PIMAGE_TLS_CALLBACK*>((BYTE*)pDosHeader + TlsCallbacksOffset)[i];
+					PIMAGE_TLS_CALLBACK pTlsCallbackIdx = reinterpret_cast<PIMAGE_TLS_CALLBACK*>((BYTE*)g_pDosHeader + TlsCallbacksOffset)[i];
 					if (!pTlsCallbackIdx)
 						break;
 
 					// Same
-					BaseOffset = Helpers::RVAToFileOffset((UINT_PTR)pTlsCallbackIdx - pOptionalHeader->ImageBase);
+					BaseOffset = Helpers::RVAToFileOffset((UINT_PTR)pTlsCallbackIdx - g_pOptionalHeader->ImageBase);
 
 					ImGui::Text("PIMAGE_TLS_CALLBACK[%i]: 0x%X", i, pTlsCallbackIdx);
 					if (PRSR_TOOLTIP)
@@ -1246,7 +1225,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
-		const PIMAGE_DATA_DIRECTORY pLoadConfigDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG];
+		const PIMAGE_DATA_DIRECTORY pLoadConfigDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG];
 		BaseOffset = Helpers::RVAToFileOffset(pLoadConfigDir->VirtualAddress);
 
 		const bool Collapsing_LoadConfigDir = ImGui::TreeNode("IMAGE_LOAD_CONFIG_DIRECTORY");
@@ -1257,7 +1236,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_LOAD_CONFIG_DIRECTORY pImageLoadConfigDir = reinterpret_cast<PIMAGE_LOAD_CONFIG_DIRECTORY>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_LOAD_CONFIG_DIRECTORY pImageLoadConfigDir = reinterpret_cast<PIMAGE_LOAD_CONFIG_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
 
 				ImGui::BulletText("[%s] Size: 0x%X", "DWORD", pImageLoadConfigDir->Size);
 				if (PRSR_TOOLTIP)
@@ -1618,7 +1597,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
-		const PIMAGE_DATA_DIRECTORY pBoundImportDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT];
+		const PIMAGE_DATA_DIRECTORY pBoundImportDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT];
 		BaseOffset = Helpers::RVAToFileOffset(pBoundImportDir->VirtualAddress);
 	
 		const bool Collapsing_BoundImportDir = ImGui::TreeNode("IMAGE_BOUND_IMPORT_DESCRIPTOR");
@@ -1629,7 +1608,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_BOUND_IMPORT_DESCRIPTOR pImageBoundImportDescr = reinterpret_cast<PIMAGE_BOUND_IMPORT_DESCRIPTOR>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_BOUND_IMPORT_DESCRIPTOR pImageBoundImportDescr = reinterpret_cast<PIMAGE_BOUND_IMPORT_DESCRIPTOR>((UINT_PTR)g_pDosHeader + BaseOffset);
 
 				static std::vector<char*> Collapsing_ImageBoundImportDescrIds;
 
@@ -1641,7 +1620,7 @@ BOOLEAN Parser::Render()
 
 					const PIMAGE_BOUND_IMPORT_DESCRIPTOR pImageBoundImportDescrIdx = &pImageBoundImportDescr[i];
 
-					BaseOffset = (BYTE*)pImageBoundImportDescrIdx - (BYTE*)pDosHeader;
+					BaseOffset = (BYTE*)pImageBoundImportDescrIdx - (BYTE*)g_pDosHeader;
 
 					if (!pImageBoundImportDescrIdx->TimeDateStamp)
 						break;
@@ -1680,7 +1659,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
-		const PIMAGE_DATA_DIRECTORY pIATDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT];
+		const PIMAGE_DATA_DIRECTORY pIATDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT];
 		BaseOffset = Helpers::RVAToFileOffset(pIATDir->VirtualAddress);
 
 		const bool Collapsing_IATDir = ImGui::TreeNode("IMAGE_THUNK_DATA");
@@ -1691,7 +1670,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_THUNK_DATA pImageThunkData = reinterpret_cast<PIMAGE_THUNK_DATA>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_THUNK_DATA pImageThunkData = reinterpret_cast<PIMAGE_THUNK_DATA>((UINT_PTR)g_pDosHeader + BaseOffset);
 
 				static std::vector<char*> Collapsing_ImageThunkDataIds;
 				for (int i = 0; ; i++)
@@ -1701,7 +1680,7 @@ BOOLEAN Parser::Render()
 
 					const PIMAGE_THUNK_DATA pImageThunkDataIdx = &pImageThunkData[i];
 
-					BaseOffset = (BYTE*)pImageThunkDataIdx - (BYTE*)pDosHeader;
+					BaseOffset = (BYTE*)pImageThunkDataIdx - (BYTE*)g_pDosHeader;
 
 					if (!pImageThunkDataIdx->u1.Function)
 						break;
@@ -1731,7 +1710,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
-		const PIMAGE_DATA_DIRECTORY pDelayImportDir = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT];
+		const PIMAGE_DATA_DIRECTORY pDelayImportDir = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT];
 		BaseOffset = Helpers::RVAToFileOffset(pDelayImportDir->VirtualAddress);
 
 		const bool Collapsing_DelayImportDir = ImGui::TreeNode("IMAGE_DELAYLOAD_DESCRIPTOR");
@@ -1742,7 +1721,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_DELAYLOAD_DESCRIPTOR pImageDelayLoad = reinterpret_cast<PIMAGE_DELAYLOAD_DESCRIPTOR>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_DELAYLOAD_DESCRIPTOR pImageDelayLoad = reinterpret_cast<PIMAGE_DELAYLOAD_DESCRIPTOR>((UINT_PTR)g_pDosHeader + BaseOffset);
 
 				static std::vector<char*> Collapsing_ImageDelayLoadIds;
 				for (int i = 0; ; i++)
@@ -1752,12 +1731,12 @@ BOOLEAN Parser::Render()
 
 					const PIMAGE_DELAYLOAD_DESCRIPTOR pImageDelayLoadIdx = &pImageDelayLoad[i];
 
-					BaseOffset = (BYTE*)pImageDelayLoadIdx - (BYTE*)pDosHeader;
+					BaseOffset = (BYTE*)pImageDelayLoadIdx - (BYTE*)g_pDosHeader;
 
 					if (!pImageDelayLoadIdx->Attributes.AllAttributes)
 						break;
 
-					const char* DelayDllName = (char*)pDosHeader + Helpers::RVAToFileOffset(pImageDelayLoadIdx->DllNameRVA);
+					const char* DelayDllName = (char*)g_pDosHeader + Helpers::RVAToFileOffset(pImageDelayLoadIdx->DllNameRVA);
 					bool Collapsing_ImageDelayLoadIdx = ImGui::TreeNode(&Collapsing_ImageDelayLoadIds[i], "IMAGE_DELAYLOAD_DESCRIPTOR[%i] (%s): 0x%X", i, DelayDllName, BaseOffset);
 					if (PRSR_TOOLTIP)
 						ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, Attributes.AllAttributes));
@@ -1806,7 +1785,7 @@ BOOLEAN Parser::Render()
 			ImGui::TreePop();
 		}
 
-		const PIMAGE_DATA_DIRECTORY pComDescr = &pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR];
+		const PIMAGE_DATA_DIRECTORY pComDescr = &g_pOptionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR];
 		BaseOffset = Helpers::RVAToFileOffset(pComDescr->VirtualAddress);
 
 		const bool Collapsing_ComDescr = ImGui::TreeNode("IMAGE_COR20_HEADER");
@@ -1817,7 +1796,7 @@ BOOLEAN Parser::Render()
 		{
 			if (BaseOffset)
 			{
-				const PIMAGE_COR20_HEADER pImageCor20Header = reinterpret_cast<PIMAGE_COR20_HEADER>((UINT_PTR)pDosHeader + BaseOffset);
+				const PIMAGE_COR20_HEADER pImageCor20Header = reinterpret_cast<PIMAGE_COR20_HEADER>((UINT_PTR)g_pDosHeader + BaseOffset);
 
 				ImGui::BulletText("[%s] cb: 0x%X", "DWORD", pImageCor20Header->cb);
 				if (PRSR_TOOLTIP)
@@ -1963,9 +1942,6 @@ BOOLEAN Parser::Render()
 
 			ImGui::TreePop();
 		}
-
-		// TO DO: Implement the remaining Data directories.
-		// Maybe implement: Right click on certain element will bring it up on Details tab. Cool idea actually.
 
 		ImGui::Spacing();
 		ImGui::Separator();
@@ -2123,15 +2099,112 @@ BOOLEAN Parser::Render()
 	return Status;
 }
 
+VOID Parser::Helpers::Parse(DWORD BaseOffset, WORD Id)
+{
+	switch (Id)
+	{
+		case IMAGE_DIRECTORY_ENTRY_RESOURCE:
+		{
+			ParseRsrcDir(BaseOffset);
+			break;
+		}
+	}
+}
+
+VOID Parser::Helpers::ParseRsrcDir(DWORD BaseOffset)
+{
+	static const PIMAGE_RESOURCE_DIRECTORY pBASE_ImageRsrcDir = reinterpret_cast<PIMAGE_RESOURCE_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
+	const PIMAGE_RESOURCE_DIRECTORY pImageRsrcDir = reinterpret_cast<PIMAGE_RESOURCE_DIRECTORY>((UINT_PTR)g_pDosHeader + BaseOffset);
+
+	ImGui::BulletText("[%s] Characteristics: 0x%X", "DWORD", pImageRsrcDir->Characteristics);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, Characteristics));
+
+	ImGui::BulletText("[%s] TimeDateStamp: 0x%X", "DWORD", pImageRsrcDir->TimeDateStamp);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, TimeDateStamp));
+
+	ImGui::BulletText("[%s] MajorVersion: 0x%X", "WORD", pImageRsrcDir->MajorVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, MajorVersion));
+
+	ImGui::BulletText("[%s] MinorVersion: 0x%X", "WORD", pImageRsrcDir->MinorVersion);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, MinorVersion));
+
+	ImGui::BulletText("[%s] NumberOfNamedEntries: 0x%X", "WORD", pImageRsrcDir->NumberOfNamedEntries);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, NumberOfNamedEntries));
+
+	ImGui::BulletText("[%s] NumberOfIdEntries: 0x%X", "WORD", pImageRsrcDir->NumberOfIdEntries);
+	if (PRSR_TOOLTIP)
+		ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, NumberOfIdEntries));
+
+	const WORD NumberOfEntries = pImageRsrcDir->NumberOfNamedEntries + pImageRsrcDir->NumberOfIdEntries;
+
+	ImGui::Spacing();
+
+	static std::vector<char*> Collapsing_ImageRsrcDirEntryIds(NumberOfEntries);
+	Collapsing_ImageRsrcDirEntryIds.clear();
+	Collapsing_ImageRsrcDirEntryIds.resize(NumberOfEntries);
+	for (int i = 0; i < Collapsing_ImageRsrcDirEntryIds.size(); i++)
+	{
+		const PIMAGE_RESOURCE_DIRECTORY_ENTRY pImageRscrDirEntryIdx = &reinterpret_cast<PIMAGE_RESOURCE_DIRECTORY_ENTRY>(pImageRsrcDir + 1)[i];
+
+		BaseOffset = (BYTE*)pImageRscrDirEntryIdx - (BYTE*)g_pDosHeader;
+
+		bool Collapsing_ImageRsrcDirEntryIdx = false;
+
+		if (pImageRscrDirEntryIdx->NameIsString)
+		{
+			const PIMAGE_RESOURCE_DIR_STRING_U ResourceName = reinterpret_cast<PIMAGE_RESOURCE_DIR_STRING_U>((BYTE*)pImageRsrcDir + pImageRscrDirEntryIdx->NameOffset);
+
+			std::wstring ResourceNameString = ResourceName->NameString;
+			ResourceNameString.resize(ResourceName->Length);
+			Collapsing_ImageRsrcDirEntryIdx = ImGui::TreeNode(&Collapsing_ImageRsrcDirEntryIds[i], "IMAGE_RESOURCE_DIRECTORY_ENTRY[%i] (%ws): 0x%X", i, ResourceNameString.c_str(), BaseOffset);
+		}
+		else
+		{
+			Collapsing_ImageRsrcDirEntryIdx = ImGui::TreeNode(&Collapsing_ImageRsrcDirEntryIds[i], "IMAGE_RESOURCE_DIRECTORY_ENTRY[%i]: 0x%X", i, BaseOffset);
+		}
+
+		if (PRSR_TOOLTIP)
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY_ENTRY, Name));
+
+		if (Collapsing_ImageRsrcDirEntryIdx)
+		{
+			if (pImageRscrDirEntryIdx->NameIsString)
+				ImGui::BulletText("[%s] NameOffset: 0x%X", "DWORD", pImageRscrDirEntryIdx->NameOffset);
+			else
+				ImGui::BulletText("[%s] Id: 0x%X", "WORD", pImageRscrDirEntryIdx->Id);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY_ENTRY, Name));
+
+			if (pImageRscrDirEntryIdx->DataIsDirectory)
+			{
+				ImGui::BulletText("[%s] OffsetToDirectory: 0x%X", "DWORD", pImageRscrDirEntryIdx->OffsetToDirectory);
+
+				//ImGui::Spacing();
+				//ImGui::Text("IMAGE_RESOURCE_DIRECTORY - OFFSET DIRECTORY");
+				//const DWORD OffsetDirectoryOffset = ((UINT_PTR)pBASE_ImageRsrcDir + pImageRscrDirEntryIdx->OffsetToDirectory) - (UINT_PTR)g_pDosHeader;
+				//Helpers::ParseRsrcDir(OffsetDirectoryOffset);
+			}
+			else
+				ImGui::BulletText("[%s] OffsetToData: 0x%X", "DWORD", pImageRscrDirEntryIdx->OffsetToData);
+			if (PRSR_TOOLTIP)
+				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY_ENTRY, OffsetToData));
+
+			ImGui::TreePop();
+		}
+		ImGui::Spacing();
+	}
+}
+
 DWORD Parser::Helpers::RVAToFileOffset(DWORD RVA)
 {
-	const PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)&g_OpenedFile[0];
-	const PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)((BYTE*)pDosHeader + pDosHeader->e_lfanew);
-	const PIMAGE_FILE_HEADER pFileHeader = &pNtHeaders->FileHeader;
-
-	for (int i = 0; i < pFileHeader->NumberOfSections; i++)
+	for (int i = 0; i < g_pFileHeader->NumberOfSections; i++)
 	{
-		const PIMAGE_SECTION_HEADER pIdxSection = &IMAGE_FIRST_SECTION(pNtHeaders)[i];
+		const PIMAGE_SECTION_HEADER pIdxSection = &IMAGE_FIRST_SECTION(g_pNtHeaders)[i];
 
 		if (RVA >= pIdxSection->VirtualAddress && RVA < pIdxSection->VirtualAddress + pIdxSection->Misc.VirtualSize)
 			return RVA - pIdxSection->VirtualAddress + pIdxSection->PointerToRawData;
