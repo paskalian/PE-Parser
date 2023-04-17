@@ -16,5 +16,6 @@ Nothing confusing, select your file from the Main menu and you're good to go.
 
 Some Tips:
 - Middle clicking on a specific item will display it's file offset.
+- Right clicking on a directory will display it's details.
 - Data directories may contain details about their own field.
 - File Offset in Hex View takes in as decimals.
