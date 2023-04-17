@@ -9,6 +9,13 @@ PIMAGE_NT_HEADERS g_pNtHeaders = nullptr;
 PIMAGE_FILE_HEADER g_pFileHeader = nullptr;
 PIMAGE_OPTIONAL_HEADER g_pOptionalHeader = nullptr;
 
+PARSER_CALLBACK g_FDetails = DTL_DFT;
+
+void __fastcall DTL_DFT()
+{
+	ImGui::Text("No item is selected.");
+}
+
 BOOLEAN g_bShowAbout = FALSE;
 BOOLEAN Parser::OpenFile(OUT std::vector<BYTE>& OpenedFile)
 {
@@ -156,6 +163,22 @@ BOOLEAN Parser::Render()
 		bool Collapsing_ImageDosHeader = ImGui::TreeNode("IMAGE_DOS_HEADER");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", 0);
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_DOS_HEADER");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("The DOS header have 2 key members that can be used in our process of parsing the entire PE header;");
+			ImGui::NewLine();
+			ImGui::TextWrapped("- [e_magic] is a word member defined as 'MZ' which is an acronym for Mark Zbikowski, one of the leading developers for MS-DOS (this was from wikipedia). This member can be checked in order to validate if it is actually 'MZ' which I also did.");
+			ImGui::TextWrapped("- [e_lfanew] is a long member defined as the offset starting from this IMAGE_DOS_HEADER to IMAGE_NT_HEADERS");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Also it contains a little stub code that if you tried to run this executable in MS-DOS, it prints out 'This program cannot be run in DOS mode.' indicating it's a Windows executable not MS-DOS.");
+		};
 
 		if (Collapsing_ImageDosHeader)
 		{
@@ -267,6 +290,21 @@ BOOLEAN Parser::Render()
 		bool Collapsing_ImageNtHeaders = ImGui::TreeNode("IMAGE_NT_HEADERS");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_NT_HEADERS, Signature));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_NT_HEADERS");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("All of the NT Headers' members are important;");
+			ImGui::NewLine();
+			ImGui::TextWrapped("- [Signature] is a dword member defined as 'PE\\0\\0' indicating it's a PE file. This member can be checked in order to validate if it is actually 'PE\\0\\0' which I also did.");
+			ImGui::TextWrapped("- [FileHeader] is the IMAGE_FILE_HEADER embedded in it, not a pointer or offset!");
+			ImGui::TextWrapped("- [OptionalHeader] is the IMAGE_OPTIONAL_HEADER embedded in it, not a pointer or offset!");
+		};
 
 		if (Collapsing_ImageNtHeaders)
 		{
@@ -291,6 +329,22 @@ BOOLEAN Parser::Render()
 		bool Collapsing_ImageFileHeader = ImGui::TreeNode("IMAGE_FILE_HEADER");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_FILE_HEADER, Machine));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_FILE_HEADER");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("The file header is one of the key structures used on our process, some important fields are;");
+			ImGui::NewLine();
+			ImGui::TextWrapped("- [Machine] is a word member that represents your computer architecture.");
+			ImGui::TextWrapped("- [NumberOfSections] is the section amount.");
+			ImGui::TextWrapped("- [TimeDateStamp] represents when this executable was created as by time since epoch.");
+			ImGui::TextWrapped("- [Characteristics] represents the characteristics of the executable, as like if it's a DLL file, executable, can it handle addresses larger than 2GB etc. more details on it's MSDN page.");
+		};
 
 		if (Collapsing_ImageFileHeader)
 		{
@@ -331,6 +385,26 @@ BOOLEAN Parser::Render()
 		bool Collapsing_ImageOptionalHeader = ImGui::TreeNode("IMAGE_OPTIONAL_HEADER");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_OPTIONAL_HEADER, Magic));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_OPTIONAL_HEADER");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("The optional header is one of the key structures used on our process, some important fields are;");
+			ImGui::NewLine();
+			ImGui::TextWrapped("- [Magic] is a word member that represents which architecture this executable was made for.");
+			ImGui::TextWrapped("- [AddressOfEntryPoint] is the first code run in this executable (excluding TLS callbacks).");
+			ImGui::TextWrapped("- [ImageBase] is the preferred base address the executable wants when it gets loaded up in memory, doesn't necessarily have to be loaded there though (expect when a special DllCharacteristics - IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE - is not defined).");
+			ImGui::TextWrapped("- [SectionAlignment] defines how should sections be aligned in memory.");
+			ImGui::TextWrapped("- [FileAlignment] defines how should sections be aligned in file.");
+			ImGui::TextWrapped("- [SizeOfImage] is the entire size needed and is of this executable when loaded into memory.");
+			ImGui::TextWrapped("- [DllCharacteristics] represents the characteristics of this executable.");
+			ImGui::TextWrapped("- [DataDirectory] one can use this array to reach all specific data directories in this executable.");
+		};
 
 		if (Collapsing_ImageOptionalHeader)
 		{
@@ -524,6 +598,28 @@ BOOLEAN Parser::Render()
 			const bool Collapsing_ImageSectionHeaderIdx = ImGui::TreeNode(&Collapsing_ImageSectionHeaderIds[i], "IMAGE_SECTION_HEADER (%s)", SectionName.c_str());
 			if (PRSR_TOOLTIP)
 				ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_SECTION_HEADER, Name));
+			if (PRSR_DETAIL)
+				g_FDetails = [](void)
+			{
+				ImGui::TextWrapped("IMAGE_SECTION_HEADER");
+
+				ImGui::Spacing();
+				ImGui::Separator();
+				ImGui::Spacing();
+
+				ImGui::TextWrapped("Sections are chunk of memories who do nearly the same job grouped basically, there are some main section names which are widely used but not a must, any section's name can be changed or new sections can be created.");
+				ImGui::NewLine();
+				ImGui::TextWrapped("- Not made in a order -");
+				ImGui::TextWrapped(".text - Contains the executable code of this executable.");
+				ImGui::TextWrapped(".data - Contains the read-write data of this executable.");
+				ImGui::TextWrapped(".rdata - Contains the read only data of this executable.");
+				ImGui::TextWrapped(".bss - Contains the uninitialized data of this executable.");
+				ImGui::TextWrapped(".rsrc - Contains the resources of this executable.");
+				ImGui::TextWrapped(".pdata - Contains the Structured Exception Handling (SEH) mechanism of this executable.");
+				ImGui::TextWrapped(".reloc - Contains the base relocation table of this executable.");
+				ImGui::NewLine();
+				ImGui::TextWrapped("Warning! Although these section names are widely used in it's context, they may not in some cases, exist in other names etc.");
+			};
 
 			if (Collapsing_ImageSectionHeaderIdx)
 			{
@@ -691,6 +787,80 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_ImageExportDir = ImGui::TreeNode("IMAGE_EXPORT_DIRECTORY");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_EXPORT_DIRECTORY, Characteristics));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_EXPORT_DIRECTORY");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the exports of this executable.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+			
+			/*
+			ImGui::NewLine();
+			if (ImGui::BeginTable("##ImageExportDir_Details_NamedExportsTable", 2, ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders))
+			{
+				ImGui::TableNextColumn();
+				ImGui::Text("Named Exports");
+				ImGui::TableNextColumn();
+				ImGui::Text("RVA");
+
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Text("NotDoneYet.dll");
+				ImGui::TableNextColumn();
+				ImGui::Text("0x0");
+
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Text("NotDoneYet2.dll");
+				ImGui::TableNextColumn();
+				ImGui::Text("0x0");
+
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Text("NotDoneYet3.dll");
+				ImGui::TableNextColumn();
+				ImGui::Text("0x0");
+
+				ImGui::EndTable();
+			}
+
+			ImGui::Spacing(); ImGui::Spacing(); ImGui::Spacing();
+
+			if (ImGui::BeginTable("##ImageExportDir_Details_ExportsTable", 2, ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders))
+			{
+				ImGui::TableNextColumn();
+				ImGui::Text("Exports (Base: 0x10)");
+				ImGui::TableNextColumn();
+				ImGui::Text("RVA");
+
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Text("0x10");
+				ImGui::TableNextColumn();
+				ImGui::Text("0x0");
+
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Text("0x11");
+				ImGui::TableNextColumn();
+				ImGui::Text("0x0");
+
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Text("0x12");
+				ImGui::TableNextColumn();
+				ImGui::Text("0x0");
+
+				ImGui::EndTable();
+			}
+			*/
+		};
 
 		if (Collapsing_ImageExportDir)
 		{
@@ -711,6 +881,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_ImageImportDescr = ImGui::TreeNode("IMAGE_IMPORT_DESCRIPTOR");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_IMPORT_DESCRIPTOR, OriginalFirstThunk));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_IMPORT_DESCRIPTOR");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the imports of this executable.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_ImageImportDescr)
 		{
@@ -731,6 +914,21 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_ImageRsrcDir = ImGui::TreeNode("IMAGE_RESOURCE_DIRECTORY");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RESOURCE_DIRECTORY, Characteristics));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_RESOURCE_DIRECTORY");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the resources of this executable.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_RESOURCE_DIRECTORY].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Although it says resources, you literally can store anything inside of it, including another executable (PE file).");
+		};
 
 		if (Collapsing_ImageRsrcDir)
 		{
@@ -751,6 +949,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_ExceptionDir = ImGui::TreeNode("IMAGE_RUNTIME_FUNCTION_ENTRY");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_RUNTIME_FUNCTION_ENTRY, BeginAddress));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_RUNTIME_FUNCTION_ENTRY");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the structured exception handling (SEH) mechanism of this executable.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_ExceptionDir)
 		{
@@ -771,6 +982,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_SecurityDir = ImGui::TreeNode("WIN_CERTIFICATE");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(WIN_CERTIFICATE, dwLength));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("WIN_CERTIFICATE");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the windows certificate of this executable, can be used to validate it.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_SecurityDir)
 		{
@@ -791,6 +1015,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_BaseRelocDir = ImGui::TreeNode("IMAGE_BASE_RELOCATION");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BASE_RELOCATION, VirtualAddress));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_BASE_RELOCATION");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the base relocation table of this executable, these relocations must be done before the executable is run.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_BaseRelocDir)
 		{
@@ -811,6 +1048,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_DebugDir = ImGui::TreeNode("IMAGE_DEBUG_DIRECTORY");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, Characteristics));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_DEBUG_DIRECTORY");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the debug information of this executable, including the pdb file path which can be used to expose the creator of it.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_DebugDir)
 		{
@@ -831,6 +1081,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_ArchDir = ImGui::TreeNode("ARCH DIRECTORY??");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, Characteristics));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("No Documented Structure");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the architecture-specific information of this executable.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_ARCHITECTURE].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_ArchDir)
 		{
@@ -851,6 +1114,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_GlobalPtrDir = ImGui::TreeNode("GLOBAL PTR??");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DEBUG_DIRECTORY, Characteristics));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("No Documented Structure");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the global-ptr relative virtual address (RVA) of this executable.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_GLOBALPTR].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_GlobalPtrDir)
 		{
@@ -871,6 +1147,21 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_TlsDir = ImGui::TreeNode("IMAGE_TLS_DIRECTORY");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, StartAddressOfRawData));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_TLS_DIRECTORY");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the Thread Local Storage (TLS) callbacks information of this executable. These callbacks must be called before the executable is run.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Although it says Thread Local Storage (TLS), you literally can exploit it's behaviour and make your code run even before AddressOfEntryPoint.");
+		};
 
 		if (Collapsing_TlsDir)
 		{
@@ -890,7 +1181,20 @@ BOOLEAN Parser::Render()
 
 		const bool Collapsing_LoadConfigDir = ImGui::TreeNode("IMAGE_LOAD_CONFIG_DIRECTORY");
 		if (PRSR_TOOLTIP)
-			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_TLS_DIRECTORY, StartAddressOfRawData));
+			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_LOAD_CONFIG_DIRECTORY, Size));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_LOAD_CONFIG_DIRECTORY");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains security related information of this executable, used in trying to prevent buffer overflows, seh exception table exploits etc.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_LoadConfigDir)
 		{
@@ -911,6 +1215,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_BoundImportDir = ImGui::TreeNode("IMAGE_BOUND_IMPORT_DESCRIPTOR");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_BOUND_IMPORT_DESCRIPTOR, TimeDateStamp));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_BOUND_IMPORT_DESCRIPTOR");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains a pre-resolved Import Address Table of it's own which the OS checks against the actual addresses and if it's correct, saves the OS some load time.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_BoundImportDir)
 		{
@@ -931,6 +1248,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_IATDir = ImGui::TreeNode("IMAGE_THUNK_DATA");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_THUNK_DATA, u1.Function));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_THUNK_DATA");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the Import Address Table of this executable.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_IATDir)
 		{
@@ -951,6 +1281,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_DelayImportDir = ImGui::TreeNode("IMAGE_DELAYLOAD_DESCRIPTOR");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_DELAYLOAD_DESCRIPTOR, Attributes.AllAttributes));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_DELAYLOAD_DESCRIPTOR");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the Delay loaded Import Address Table (IAT) of this executable. What it does basically is preventing the OS Loader from loading a necessary DLL unless it's really necessary, can be used for example in a function which is only getting called in very corner cases, so basically it's to save the OS Loader some time.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_DelayImportDir)
 		{
@@ -971,6 +1314,19 @@ BOOLEAN Parser::Render()
 		const bool Collapsing_ComDescr = ImGui::TreeNode("IMAGE_COR20_HEADER");
 		if (PRSR_TOOLTIP)
 			ImGui::SetTooltip("Offset: 0x%X", BaseOffset + offsetof(IMAGE_COR20_HEADER, cb));
+		if (PRSR_DETAIL)
+			g_FDetails = [](void)
+		{
+			ImGui::TextWrapped("IMAGE_COR20_HEADER");
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::TextWrapped("Contains the Component Object Model (COM) descriptor table of this executable.");
+			ImGui::NewLine();
+			ImGui::TextWrapped("Can be reached by adding IMAGE_OPTIONAL_HEADER.DataDirectory[IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR].VirtualAddress into IMAGE_DOS_HEADER (in memory, in file it must be converted to a file offset first)");
+		};
 
 		if (Collapsing_ComDescr)
 		{
@@ -1003,7 +1359,7 @@ BOOLEAN Parser::Render()
 
 		if (ImGui::BeginTabItem("Details"))
 		{
-			ImGui::Text("Not done yet.");
+			g_FDetails();
 
 			ImGui::EndTabItem();
 		}
@@ -1139,6 +1495,7 @@ BOOLEAN Parser::Render()
 	return Status;
 }
 
+// Parsers
 VOID Parser::Helpers::Parse(DWORD BaseOffset, WORD Id)
 {
 	switch (Id)
